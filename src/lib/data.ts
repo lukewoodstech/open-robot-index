@@ -97,7 +97,7 @@ type RobotRow = Robot & {
 };
 
 const ROBOT_SELECT =
-  "*, companies(*), robot_tiers(*), images(*), robot_sources(sources(*))";
+  "*, companies(*), robot_tiers(*), images!robot_id(*), robot_sources(sources(*))";
 
 function rowToFull(row: RobotRow): RobotFull {
   const { companies, robot_tiers, images, robot_sources, ...robot } = row;
