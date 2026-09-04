@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { dataSourceLabel } from "@/lib/data";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,9 @@ export default function RootLayout({
             <Link href="/about#corrections" className="hover:text-text">
               Report a correction
             </Link>
+            {dataSourceLabel() === "seed" && (
+              <span className="text-sdk-gated">Serving built-in seed data; database not connected.</span>
+            )}
           </div>
         </footer>
       </body>
