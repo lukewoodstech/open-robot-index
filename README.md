@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Open Robot Index
 
-## Getting Started
+A directory of robots under $25K scored on whether you can actually program them. Every fact has a source URL and a last-checked date. See [CLAUDE.md](CLAUDE.md) for the full brief.
 
-First, run the development server:
+## Run locally (no backend needed)
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without Supabase env vars the site serves `src/data/seed.ts` directly, so every page works offline.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy (Phase 1)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Supabase.** Create a project. In the SQL editor run `supabase/migrations/0001_init.sql`. Copy the project URL, anon key and service role key into `.env.local` (see `.env.example`).
+2. **Seed.** `npm run seed` upserts the 22 robots, their tiers and sources. Safe to re-run.
+3. **Vercel.** Push to GitHub, import the repo in Vercel, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables, deploy. Pages revalidate hourly.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run seed` | Seed Supabase from `src/data/seed.ts` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+supabase/migrations/   schema (enums, tables, RLS: public select only)
+scripts/seed.ts        seed script (service role key)
+src/data/seed.ts       the 22-robot DATA array, all last_checked 2026-09-03
+src/lib/data.ts        the only data access layer (Supabase or seed fallback)
+src/lib/types.ts       shared types and label maps
+src/components/        SDK badge, confidence mark, index table
+src/app/               / , /robots/[slug], /about
+```
