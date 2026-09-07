@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfidenceMark, SdkBadge } from "@/components/badges";
-import { getRobot, getRobotSlugs } from "@/lib/data";
+import { RobotThumb, heroImage } from "@/components/robot-thumb";
+import { getRobot, getRobotSlugs, getRobots } from "@/lib/data";
 import { isoDate, num, usd } from "@/lib/format";
 import {
   CONFIDENCE_LABELS,
   FORM_LABELS,
   LEROBOT_LABELS,
   SDK_LABELS,
+  entryTier,
   sdkTier,
 } from "@/lib/types";
 
@@ -38,11 +41,15 @@ const SDK_VERDICT: Record<string, string> = {
 
 export default async function RobotPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const r = await getRobot(slug);
+  const [r, all] = await Promise.all([getRobot(slug), getRobots()]);
   if (!r) notFound();
 
-  const hero = r.images.find((i) => i.kind === "hero") ?? r.images[0];
-  const gallery = r.images.filter((i) => i.kind === "gallery" && i.id !== hero?.id);
+  const hero = heroImage(r);
+  const gallery = r.images.filter((i) => i.id !== hero?.id);
+  const related = all
+    .filter((x) => x.id !== r.id && x.form === r.form)
+    .sort((a, b) => (entryTier(a)?.price_usd ?? Infinity) - (entryTier(b)?.price_usd ?? Infinity))
+    .slice(0, 4);
   const sdkT = sdkTier(r);
   const borderTone = { full: "border-sdk-full/50", gated: "border-sdk-gated/50", none: "border-sdk-none/50" }[r.sdk_access];
 
@@ -64,14 +71,22 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
 
       {/* Above the fold: hero left, SDK verdict right. */}
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr] items-start">
-        <div className="rounded-lg bg-panel border border-line aspect-[4/3] overflow-hidden flex items-center justify-center">
+        <div className="relative rounded-lg bg-panel border border-line aspect-[4/3] overflow-hidden">
           {hero ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={hero.url} alt={r.name} className="w-full h-full object-cover" />
+            <Image
+              src={hero.url}
+              alt={r.name}
+              fill
+              priority
+              sizes="(min-width: 1024px) 60vw, 100vw"
+              className="object-cover"
+            />
           ) : (
-            <div className="text-center text-muted text-sm px-6">
-              <div className="text-text">{FORM_LABELS[r.form]}</div>
-              <div className="mt-1">No manufacturer image on file yet.</div>
+            <div className="absolute inset-0 flex items-center justify-center text-center text-muted text-sm px-6">
+              <div>
+                <div className="text-text">{FORM_LABELS[r.form]}</div>
+                <div className="mt-1">No manufacturer image on file yet.</div>
+              </div>
             </div>
           )}
         </div>
@@ -199,8 +214,9 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
           <ul className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
             {gallery.map((img) => (
               <li key={img.id} className="text-xs text-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.url} alt="" className="rounded-md border border-line aspect-[4/3] object-cover w-full" />
+                <div className="relative rounded-md border border-line aspect-[4/3] overflow-hidden bg-panel">
+                  <Image src={img.url} alt="" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+                </div>
                 <div className="mt-1">
                   {img.attribution} ·{" "}
                   <a href={img.source_url} target="_blank" rel="noopener" className="underline">source</a>
@@ -234,6 +250,29 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
           .
         </p>
       </section>
+
+      {related.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-lg font-semibold tracking-tight">Also consider</h2>
+          <p className="mt-1 text-sm text-muted">Other {FORM_LABELS[r.form].toLowerCase()} robots in the index, cheapest first.</p>
+          <ul className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {related.map((x) => (
+              <li key={x.id}>
+                <Link href={`/robots/${x.slug}`} className="block rounded-lg border border-line bg-panel hover:border-muted overflow-hidden">
+                  <RobotThumb r={x} size={0} className="!w-full aspect-[4/3] rounded-none border-0" sizes="(min-width: 1024px) 25vw, 50vw" />
+                  <div className="p-3">
+                    <div className="font-medium truncate">{x.name}</div>
+                    <div className="mt-1 flex items-center justify-between gap-2 text-sm">
+                      <SdkBadge value={x.sdk_access} />
+                      <span className="tabular-nums">{usd(entryTier(x)?.price_usd)}</span>
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-10 text-sm text-muted">
         <h2 className="text-lg font-semibold tracking-tight text-text">Related news</h2>

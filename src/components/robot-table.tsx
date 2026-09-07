@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ConfidenceMark, SdkBadge } from "@/components/badges";
+import { RobotThumb, heroImage } from "@/components/robot-thumb";
 import { isoDate, usd } from "@/lib/format";
 import {
   FORM_LABELS,
@@ -25,6 +27,7 @@ const PRICE_CEILINGS = [
   { label: "≤ $10K", value: 10000 },
 ];
 
+const FORM_ORDER: RobotForm[] = ["arm", "bimanual", "desktop", "mobile_base", "mobile_manipulator", "quadruped", "humanoid"];
 const SDK_ORDER: Record<SdkAccess, number> = { full: 0, gated: 1, none: 2 };
 const LEROBOT_ORDER = { native: 0, supported: 1, compatible: 2, community: 3, none: 4 };
 
@@ -37,10 +40,15 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [open, setOpen] = useState<string | null>(null);
 
-  const forms = useMemo(
-    () => Array.from(new Set(robots.map((r) => r.form))).sort(),
-    [robots],
-  );
+  const formTiles = useMemo(() => {
+    return FORM_ORDER.map((f) => {
+      const list = robots.filter((r) => r.form === f);
+      if (list.length === 0) return null;
+      const priced = list.map((r) => entryTier(r)?.price_usd).filter((p): p is number => p != null);
+      const withImage = list.find((r) => heroImage(r)) ?? list[0];
+      return { form: f, count: list.length, from: priced.length ? Math.min(...priced) : null, rep: withImage };
+    }).filter((t): t is NonNullable<typeof t> => t != null);
+  }, [robots]);
 
   const rows = useMemo(() => {
     const filtered = robots.filter((r) => {
@@ -64,7 +72,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
           v = a.company.name.localeCompare(b.company.name);
           break;
         case "form":
-          v = a.form.localeCompare(b.form);
+          v = FORM_ORDER.indexOf(a.form) - FORM_ORDER.indexOf(b.form);
           break;
         case "sdk":
           v = SDK_ORDER[a.sdk_access] - SDK_ORDER[b.sdk_access];
@@ -102,8 +110,40 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
 
   return (
     <div>
+      {/* Browse by form: image tiles that double as the form filter. */}
+      <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto">
+        <div className="flex gap-2 min-w-max sm:min-w-0 sm:grid sm:grid-cols-4 lg:grid-cols-7">
+          {formTiles.map((t) => {
+            const active = form === t.form;
+            const hero = heroImage(t.rep);
+            return (
+              <button
+                key={t.form}
+                onClick={() => setForm(active ? "all" : t.form)}
+                aria-pressed={active}
+                className={`group relative w-[150px] sm:w-auto aspect-[5/4] overflow-hidden rounded-lg border text-left transition-colors ${
+                  active ? "border-accent" : "border-line hover:border-muted"
+                }`}
+              >
+                {hero ? (
+                  <Image src={hero.url} alt="" fill sizes="(min-width: 1024px) 14vw, (min-width: 640px) 25vw, 150px" className="object-cover" />
+                ) : (
+                  <div className="absolute inset-0 bg-panel-2" />
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg/95 via-bg/70 to-transparent px-3 pt-8 pb-2.5">
+                  <div className="text-sm font-medium leading-tight">{FORM_LABELS[t.form]}</div>
+                  <div className="text-xs text-muted tabular-nums">
+                    {t.count} · from {usd(t.from)}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Filters: one line on desktop, wraps on small screens. */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm border-y border-line py-3">
+      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm border-y border-line py-3">
         <div className="flex items-center gap-1" role="group" aria-label="SDK access">
           <Chip active={sdk === "all"} onClick={() => setSdk("all")}>All SDK</Chip>
           <Chip active={sdk === "full"} onClick={() => setSdk("full")} tone="full">Full</Chip>
@@ -115,7 +155,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
           label="Form"
           value={form}
           onChange={(v) => setForm(v as RobotForm | "all")}
-          options={[{ value: "all", label: "All forms" }, ...forms.map((f) => ({ value: f, label: FORM_LABELS[f] }))]}
+          options={[{ value: "all", label: "All forms" }, ...formTiles.map((t) => ({ value: t.form, label: FORM_LABELS[t.form] }))]}
         />
 
         <Select
@@ -164,11 +204,11 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="text-muted text-left">
-                  <Th onClick={() => toggleSort("name")} active={sortKey === "name"} dir={sortDir} className="w-[26%]">Robot</Th>
+                  <Th onClick={() => toggleSort("name")} active={sortKey === "name"} dir={sortDir} className="w-[30%]">Robot</Th>
                   <Th onClick={() => toggleSort("form")} active={sortKey === "form"} dir={sortDir}>Form</Th>
                   <Th onClick={() => toggleSort("sdk")} active={sortKey === "sdk"} dir={sortDir}>SDK</Th>
                   <Th onClick={() => toggleSort("price")} active={sortKey === "price"} dir={sortDir} className="text-right">From</Th>
-                  <Th onClick={() => toggleSort("price")} active={false} dir={sortDir} className="text-right">SDK tier</Th>
+                  <th className="font-normal py-2 pr-3 text-right">SDK tier</th>
                   <Th onClick={() => toggleSort("lerobot")} active={sortKey === "lerobot"} dir={sortDir}>LeRobot</Th>
                   <th className="font-normal py-2 pr-3">Languages</th>
                   <th className="font-normal py-2 pr-3">Confidence</th>
@@ -188,18 +228,17 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
               const t = entryTier(r);
               return (
                 <li key={r.id} className="py-3">
-                  <Link href={`/robots/${r.slug}`} className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                  <Link href={`/robots/${r.slug}`} className="flex items-center gap-3">
+                    <RobotThumb r={r} size={64} />
+                    <div className="min-w-0 flex-1">
                       <div className="font-medium truncate">{r.name}</div>
                       <div className="text-xs text-muted truncate">{r.company.name} · {FORM_LABELS[r.form]}</div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="tabular-nums">{usd(t?.price_usd)}</div>
-                      <div className="mt-1 flex items-center justify-end gap-2">
+                      <div className="mt-1.5 flex items-center gap-2">
                         <SdkBadge value={r.sdk_access} />
                         <ConfidenceMark value={r.confidence} note={r.confidence_note} />
                       </div>
                     </div>
+                    <div className="tabular-nums text-right shrink-0">{usd(t?.price_usd)}</div>
                   </Link>
                 </li>
               );
@@ -214,6 +253,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
 function Row({ r, open, onToggle }: { r: RobotFull; open: boolean; onToggle: () => void }) {
   const entry = entryTier(r);
   const sdkT = sdkTier(r);
+  const hero = heroImage(r);
   return (
     <>
       <tr
@@ -221,25 +261,37 @@ function Row({ r, open, onToggle }: { r: RobotFull; open: boolean; onToggle: () 
         onClick={onToggle}
         aria-expanded={open}
       >
-        <td className="py-2.5 pr-3">
-          <div className="font-medium">{r.name}</div>
-          <div className="text-xs text-muted">{r.company.name}</div>
+        <td className="py-2 pr-3">
+          <div className="flex items-center gap-3">
+            <RobotThumb r={r} size={48} />
+            <div className="min-w-0">
+              <div className="font-medium truncate">{r.name}</div>
+              <div className="text-xs text-muted truncate">{r.company.name}</div>
+            </div>
+          </div>
         </td>
-        <td className="py-2.5 pr-3 text-muted">{FORM_LABELS[r.form]}</td>
-        <td className="py-2.5 pr-3"><SdkBadge value={r.sdk_access} /></td>
-        <td className="py-2.5 pr-3 text-right tabular-nums">{usd(entry?.price_usd)}</td>
-        <td className="py-2.5 pr-3 text-right tabular-nums text-muted">
+        <td className="py-2 pr-3 text-muted">{FORM_LABELS[r.form]}</td>
+        <td className="py-2 pr-3"><SdkBadge value={r.sdk_access} /></td>
+        <td className="py-2 pr-3 text-right tabular-nums">{usd(entry?.price_usd)}</td>
+        <td className="py-2 pr-3 text-right tabular-nums text-muted">
           {sdkT ? (sdkT.price_usd == null ? "Quote" : sdkT.id === entry?.id ? "same" : usd(sdkT.price_usd)) : "—"}
         </td>
-        <td className="py-2.5 pr-3 text-muted">{LEROBOT_LABELS[r.lerobot_support]}</td>
-        <td className="py-2.5 pr-3 text-muted">{r.languages.join(", ")}</td>
-        <td className="py-2.5 pr-3"><ConfidenceMark value={r.confidence} note={r.confidence_note} /></td>
+        <td className="py-2 pr-3 text-muted">{LEROBOT_LABELS[r.lerobot_support]}</td>
+        <td className="py-2 pr-3 text-muted">{r.languages.join(", ")}</td>
+        <td className="py-2 pr-3"><ConfidenceMark value={r.confidence} note={r.confidence_note} /></td>
       </tr>
       <tr className="border-0">
         <td colSpan={8} className="p-0">
           <div className="row-expand" data-open={open}>
             <div>
-              <div className="px-3 pb-4 pt-1 grid gap-4 md:grid-cols-[1fr_minmax(260px,320px)] bg-panel border-t border-line/60">
+              <div className="px-3 pb-4 pt-3 grid gap-5 md:grid-cols-[200px_1fr_minmax(240px,300px)] bg-panel border-t border-line/60">
+                <div className="relative aspect-[4/3] rounded-md overflow-hidden bg-panel-2 border border-line">
+                  {hero ? (
+                    <Image src={hero.url} alt={r.name} fill sizes="200px" className="object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-xs text-muted">No image yet</div>
+                  )}
+                </div>
                 <div>
                   <p className="text-sm leading-relaxed max-w-[70ch]">{r.summary}</p>
                   <p className="mt-3 text-sm">

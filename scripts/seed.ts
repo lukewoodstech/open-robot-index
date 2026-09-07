@@ -46,6 +46,7 @@ async function main() {
   // Robots ----------------------------------------------------------------
   let tiersWritten = 0;
   let sourcesWritten = 0;
+  let imagesWritten = 0;
   for (const r of DATA) {
     const cid = companyId.get(r.company);
     if (!cid) fail(r.slug, { message: `unknown company ${r.company}` });
@@ -127,9 +128,32 @@ async function main() {
     );
     if (tErr) fail(`tiers ${r.slug}`, tErr);
     tiersWritten += r.tiers.length;
+
+    // Images: replace. Files live in public/robots/<slug>/ and deploy with the site.
+    await db.from("robots").update({ hero_image_id: null }).eq("id", rid);
+    await db.from("images").delete().eq("robot_id", rid);
+    if (r.images?.length) {
+      const { data: imgs, error: iErr } = await db
+        .from("images")
+        .insert(
+          r.images.map((im) => ({
+            robot_id: rid,
+            url: `/robots/${r.slug}/${im.file}`,
+            storage_path: `public/robots/${r.slug}/${im.file}`,
+            source_url: im.sourceUrl,
+            attribution: im.attribution,
+            kind: im.kind,
+          })),
+        )
+        .select("id, kind");
+      if (iErr) fail(`images ${r.slug}`, iErr);
+      const hero = imgs!.find((i) => i.kind === "hero");
+      if (hero) await db.from("robots").update({ hero_image_id: hero.id }).eq("id", rid);
+      imagesWritten += imgs!.length;
+    }
     console.log(`✓ ${r.name}`);
   }
-  console.log(`\nDone: ${DATA.length} robots, ${tiersWritten} tiers, ${sourcesWritten} sources. last_checked = ${LAST_CHECKED}`);
+  console.log(`\nDone: ${DATA.length} robots, ${tiersWritten} tiers, ${sourcesWritten} sources, ${imagesWritten} images. last_checked = ${LAST_CHECKED}`);
 }
 
 main().catch((e) => {

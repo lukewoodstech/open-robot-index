@@ -49,6 +49,15 @@ export interface SeedTier {
   compute?: string;
 }
 
+export interface SeedImage {
+  /** File under public/robots/<slug>/ */
+  file: string;
+  /** Page the image was taken from (press kit, product page, repo). */
+  sourceUrl: string;
+  attribution: string;
+  kind: "hero" | "gallery";
+}
+
 export interface SeedRobot {
   slug: string;
   name: string;
@@ -74,6 +83,7 @@ export interface SeedRobot {
   payloadKg?: number;
   heightCm?: number;
   weightKg?: number;
+  images?: SeedImage[];
 }
 
 export const COMPANIES: SeedCompany[] = [
@@ -97,6 +107,7 @@ export const COMPANIES: SeedCompany[] = [
   { slug: "robotis", name: "ROBOTIS", country: "South Korea", website: "https://www.robotis.com", description: "Maker of DYNAMIXEL servos and the open-source OpenMANIPULATOR and TurtleBot 3 platforms." },
   { slug: "berkeley-hybrid-robotics", name: "UC Berkeley Hybrid Robotics", country: "United States", website: "https://lite.berkeley-humanoid.org", description: "Research lab behind the open-source Berkeley Humanoid Lite." },
   { slug: "enactic", name: "Enactic", country: "Japan", website: "https://openarm.dev", description: "Maintains OpenArm, an open-source bimanual arm for teleoperation and learning." },
+  { slug: "nori-robotics", name: "Nori Robotics", country: "United States", website: "https://www.norirobotics.com", description: "San Francisco startup (YC S26) selling the A3, a wheeled bimanual robot assembled in the US at an appliance price." },
   { slug: "mangdang", name: "MangDang", country: "China", website: "https://www.mangdang.store", description: "Makers of the Mini Pupper open-source ROS 2 quadruped." },
 ];
 
@@ -121,8 +132,7 @@ export const DATA: SeedRobot[] = [
     confNote: "The repo lists vendors but no prices. Seeed's kit price is used here; other vendors and self-sourced BOMs (reported at $100 to $130 per arm) differ.",
     priceNote: "Seeed SO-ARM101 Pro kit: servos, boards and hardware for one arm, no printed parts",
     tiers: [
-      { name: "SO-ARM101 Pro kit (Seeed)", price: 277.99, note: "Servos, boards and hardware; printed parts are a $29.90 add-on.", includesSdk: true },
-      { name: "Printed parts add-on (Seeed)", price: 29.9, includesSdk: true },
+      { name: "SO-ARM101 Pro kit (Seeed)", price: 277.99, note: "Servos, boards and hardware for one arm; Seeed's printed-parts add-on is $29.90 extra.", includesSdk: true },
     ],
     src: { url: "https://www.seeedstudio.com/SO-ARM101-Low-Cost-AI-Arm-Kit-Pro-p-6427.html", title: "SO-ARM101 Low-Cost AI Arm Kit Pro", publisher: "Seeed Studio", quote: "$277.99, in stock", field: "price" },
     extraSources: [
@@ -131,6 +141,9 @@ export const DATA: SeedRobot[] = [
     ],
     dof: 5,
     weightKg: 0.8,
+    images: [
+      { file: "hero.webp", sourceUrl: "https://github.com/TheRobotStudio/SO-ARM100", attribution: "The Robot Studio, SO-ARM100 repository (Apache-2.0)", kind: "hero" },
+    ],
   },
   {
     slug: "koch-v1-1",
@@ -159,6 +172,9 @@ export const DATA: SeedRobot[] = [
       { url: "https://github.com/jess-moss/koch-v1-1", title: "Koch v1.1 repository", publisher: "GitHub", field: "open_hardware" },
     ],
     dof: 5,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://github.com/jess-moss/koch-v1-1", attribution: "Jess Moss, koch-v1-1 repository (Apache-2.0)", kind: "hero" },
+    ],
   },
   {
     slug: "lekiwi",
@@ -187,6 +203,9 @@ export const DATA: SeedRobot[] = [
       { url: "https://huggingface.co/docs/lerobot/lekiwi", title: "LeKiwi in LeRobot docs", publisher: "Hugging Face", field: "lerobot_support" },
     ],
     dof: 5,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://github.com/SIGRobotics-UIUC/LeKiwi", attribution: "SIGRobotics UIUC, LeKiwi repository (Apache-2.0)", kind: "hero" },
+    ],
   },
   {
     slug: "xlerobot",
@@ -214,6 +233,9 @@ export const DATA: SeedRobot[] = [
       { url: "https://github.com/Vector-Wangel/XLeRobot", title: "XLeRobot repository", publisher: "GitHub", field: "open_hardware" },
     ],
     dof: 10,
+    images: [
+      { file: "hero.png", sourceUrl: "https://github.com/Vector-Wangel/XLeRobot", attribution: "Vector Wang, XLeRobot repository (Apache-2.0)", kind: "hero" },
+    ],
   },
   {
     slug: "hopejr",
@@ -241,6 +263,9 @@ export const DATA: SeedRobot[] = [
       { url: "https://github.com/TheRobotStudio/HopeJR", title: "HopeJR repository", publisher: "The Robot Studio", field: "open_hardware" },
     ],
     dof: 32,
+    images: [
+      { file: "hero.png", sourceUrl: "https://github.com/TheRobotStudio/HopeJR", attribution: "The Robot Studio, HopeJR repository artwork", kind: "hero" },
+    ],
   },
   {
     slug: "reachy-mini",
@@ -271,6 +296,9 @@ export const DATA: SeedRobot[] = [
     dof: 9,
     heightCm: 28,
     weightKg: 1.5,
+    images: [
+      { file: "hero.png", sourceUrl: "https://huggingface.co/blog/reachy-mini", attribution: "Pollen Robotics / Hugging Face, Reachy Mini announcement", kind: "hero" },
+    ],
   },
   {
     slug: "unitree-go2",
@@ -303,6 +331,9 @@ export const DATA: SeedRobot[] = [
     payloadKg: 8,
     heightCm: 40,
     weightKg: 15,
+    images: [
+      { file: "hero.png", sourceUrl: "https://www.unitree.com/go2", attribution: "Unitree Robotics, product page", kind: "hero" },
+    ],
   },
   {
     slug: "unitree-g1",
@@ -331,6 +362,9 @@ export const DATA: SeedRobot[] = [
     payloadKg: 2,
     heightCm: 127,
     weightKg: 35,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://www.unitree.com/g1", attribution: "Unitree Robotics, product page", kind: "hero" },
+    ],
   },
   {
     slug: "stretch-3",
@@ -361,6 +395,9 @@ export const DATA: SeedRobot[] = [
     payloadKg: 2,
     heightCm: 140,
     weightKg: 24.5,
+    images: [
+      { file: "hero.webp", sourceUrl: "https://hello-stretch3.com/", attribution: "Hello Robot, Stretch 3 product page", kind: "hero" },
+    ],
   },
   {
     slug: "turtlebot-4",
@@ -390,6 +427,9 @@ export const DATA: SeedRobot[] = [
     ],
     payloadKg: 9,
     weightKg: 3.9,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://clearpathrobotics.com/turtlebot-4/", attribution: "Clearpath Robotics, TurtleBot 4 product page", kind: "hero" },
+    ],
   },
   {
     slug: "mycobot-280",
@@ -417,6 +457,9 @@ export const DATA: SeedRobot[] = [
     dof: 6,
     payloadKg: 0.25,
     weightKg: 0.85,
+    images: [
+      { file: "hero.png", sourceUrl: "https://shop.elephantrobotics.com/products/mycobot-worlds-smallest-and-lightest-six-axis-collaborative-robot", attribution: "Elephant Robotics, store product page", kind: "hero" },
+    ],
   },
   {
     slug: "ufactory-lite-6",
@@ -445,6 +488,9 @@ export const DATA: SeedRobot[] = [
     dof: 6,
     payloadKg: 0.6,
     weightKg: 4.5,
+    images: [
+      { file: "hero.png", sourceUrl: "https://www.ufactory.cc/lite-6-collaborative-robot/", attribution: "UFACTORY, product page (still from product animation)", kind: "hero" },
+    ],
   },
   {
     slug: "agilex-piper",
@@ -474,6 +520,9 @@ export const DATA: SeedRobot[] = [
     dof: 6,
     payloadKg: 1.5,
     weightKg: 4.2,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://global.agilex.ai/products/piper", attribution: "AgileX Robotics, product page", kind: "hero" },
+    ],
   },
   {
     slug: "trossen-widowx-ai",
@@ -499,6 +548,9 @@ export const DATA: SeedRobot[] = [
     src: { url: "https://store.trossenrobotics.com/products/widowx-ai", title: "WidowX AI store page", publisher: "Trossen Robotics", quote: "Regular price $4,545.95 USD", field: "price" },
     dof: 6,
     payloadKg: 1.5,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://store.trossenrobotics.com/products/widowx-ai", attribution: "Trossen Robotics, product page", kind: "hero" },
+    ],
   },
   {
     slug: "deep-robotics-lite3",
@@ -526,6 +578,9 @@ export const DATA: SeedRobot[] = [
     dof: 12,
     payloadKg: 5,
     weightKg: 12,
+    images: [
+      { file: "hero.png", sourceUrl: "https://shop.deeprobotics.us/products/lite-3", attribution: "DEEP Robotics, US store product page", kind: "hero" },
+    ],
   },
   {
     slug: "waveshare-roarm-m3",
@@ -555,6 +610,9 @@ export const DATA: SeedRobot[] = [
     ],
     dof: 5,
     payloadKg: 0.2,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://www.waveshare.com/roarm-m3.htm", attribution: "Waveshare, product page", kind: "hero" },
+    ],
   },
   {
     slug: "annin-ar4-mk5",
@@ -581,6 +639,9 @@ export const DATA: SeedRobot[] = [
     dof: 6,
     payloadKg: 2,
     weightKg: 11,
+    images: [
+      { file: "hero.webp", sourceUrl: "https://anninrobotics.com/", attribution: "Annin Robotics, website", kind: "hero" },
+    ],
   },
   {
     slug: "dobot-magician",
@@ -609,6 +670,9 @@ export const DATA: SeedRobot[] = [
     dof: 4,
     payloadKg: 0.5,
     weightKg: 3.4,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://www.dobot-robots.com/products/education/magician.html", attribution: "Dobot, product page banner", kind: "hero" },
+    ],
   },
   {
     slug: "openmanipulator-x",
@@ -635,6 +699,9 @@ export const DATA: SeedRobot[] = [
     dof: 4,
     payloadKg: 0.5,
     weightKg: 0.7,
+    images: [
+      { file: "hero.webp", sourceUrl: "https://www.robotis.us/openmanipulator-x-rm-x52-tnm/", attribution: "ROBOTIS, US store product page", kind: "hero" },
+    ],
   },
   {
     slug: "berkeley-humanoid-lite",
@@ -664,6 +731,9 @@ export const DATA: SeedRobot[] = [
     dof: 22,
     heightCm: 100,
     weightKg: 16,
+    images: [
+      { file: "hero.png", sourceUrl: "https://lite.berkeley-humanoid.org/", attribution: "Hybrid Robotics, UC Berkeley, project site (CC BY-SA 4.0)", kind: "hero" },
+    ],
   },
   {
     slug: "openarm",
@@ -692,6 +762,44 @@ export const DATA: SeedRobot[] = [
     ],
     dof: 14,
     payloadKg: 3,
+    images: [
+      { file: "hero.webp", sourceUrl: "https://openarm.dev/", attribution: "Enactic, OpenArm project site", kind: "hero" },
+    ],
+  },
+  {
+    slug: "nori-a3",
+    name: "Nori A3",
+    company: "nori-robotics",
+    form: "mobile_manipulator",
+    notes:
+      "A wheeled bimanual robot with two 7+1 DoF arms on a telescoping column, assembled in San Francisco and sold outright for $1,688. Onboard Raspberry Pi 5 runs the control loop and safeties; heavier policies run from your computer over the network. The open Python SDK is included with every unit. Launched August 2026, shipping in batches.",
+    sdk: "full",
+    sdkNote: "The open-source Python SDK (Apache-2.0) is included with the single $1,688 tier. It drives the robot over WebRTC to an onboard ROS 2 gateway: base and arm motion, telemetry, episode recording and E-stop. A TypeScript SDK powers the web app.",
+    languages: ["Python", "TypeScript", "ROS 2"],
+    accessLevel: "Base jog, absolute arm moves, telemetry, episode recording, E-stop; heavy inference runs off-board over LAN or WAN",
+    openHardware: "partial",
+    openHardwareNote: "The SDK and wire protocol are open and 3D files are published for repairs, but the company says it does not open-source the robot as a whole.",
+    lerobot: "compatible",
+    sim: "Mock robot in the SDK for development; no physics simulator published",
+    availability: "Preorder at full price; first units shipped July 2026, current batch ships fall 2026",
+    conf: "medium",
+    confNote: "Price and inclusions are on the official site and the SDK is public. The product is weeks old: the vendor says only parts of the SDK are hardware-verified, and ship dates are batch-based.",
+    priceNote: "Single tier, paid in full; includes SDK, Discord and priority shipping",
+    tiers: [
+      { name: "Nori A3", price: 1688, note: "Assembled robot with warranty; optional paid software on top.", includesSdk: true, compute: "Raspberry Pi 5 onboard; policies run off-board" },
+    ],
+    src: { url: "https://www.norirobotics.com/preorder", title: "NORI A3 preorder page", publisher: "Nori Robotics", quote: "access to the open-source SDK, Discord community, and priority shipping", field: "price" },
+    extraSources: [
+      { url: "https://github.com/Nori-Robotics/nori-sdk-py", title: "nori-sdk-py", publisher: "Nori Robotics", quote: "Python operator client for Nori robots", field: "sdk_access" },
+      { url: "https://arxiv.org/html/2605.16537", title: "Nori A3: a bimanual mobile manipulator at the appliance price point", publisher: "arXiv", quote: "We do not open-source the robot as a whole", field: "open_hardware" },
+    ],
+    dof: 19,
+    payloadKg: 1.5,
+    heightCm: 145,
+    weightKg: 20.4,
+    images: [
+      { file: "hero.png", sourceUrl: "https://www.norirobotics.com/", attribution: "Nori Robotics, website (cropped)", kind: "hero" },
+    ],
   },
   {
     slug: "mini-pupper-2",
@@ -717,5 +825,8 @@ export const DATA: SeedRobot[] = [
     src: { url: "https://mangdang.store/products/mp2", title: "Mini Pupper 2 store page", publisher: "MangDang", quote: "Sale price $649.00", field: "price" },
     dof: 12,
     weightKg: 0.9,
+    images: [
+      { file: "hero.jpg", sourceUrl: "https://mangdang.store/products/mp2", attribution: "MangDang, store product page", kind: "hero" },
+    ],
   },
 ];

@@ -55,6 +55,15 @@ function seedToFull(r: SeedRobot): RobotFull {
     checked_at: LAST_CHECKED,
     sort_order: i,
   }));
+  const images: RobotImage[] = (r.images ?? []).map((im, i) => ({
+    id: `image:${r.slug}:${i}`,
+    robot_id: `robot:${r.slug}`,
+    url: `/robots/${r.slug}/${im.file}`,
+    storage_path: `public/robots/${r.slug}/${im.file}`,
+    source_url: im.sourceUrl,
+    attribution: im.attribution,
+    kind: im.kind,
+  }));
   return {
     id: `robot:${r.slug}`,
     slug: r.slug,
@@ -77,12 +86,12 @@ function seedToFull(r: SeedRobot): RobotFull {
     payload_kg: r.payloadKg ?? null,
     height_cm: r.heightCm ?? null,
     weight_kg: r.weightKg ?? null,
-    hero_image_id: null,
+    hero_image_id: images.find((i) => i.kind === "hero")?.id ?? null,
     last_checked: LAST_CHECKED,
     company,
     tiers,
     sources,
-    images: [],
+    images,
   };
 }
 
