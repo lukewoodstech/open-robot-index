@@ -12,34 +12,44 @@ playbook self-contained: the routine starts with zero context.
 
 ## How agents write
 
-Agents never write to public tables. They file proposals through the site:
+Agents never write to public tables. They file rows in the `proposals` table and
+nothing else. The cloud sandbox may block outbound HTTP to arbitrary hosts, so the
+primary write path is the Supabase MCP connector (project `bdtvvzkoocymycqafkqb`):
 
-```
-POST https://open-robot-index.vercel.app/api/proposals
-Authorization: Bearer <CRON_SECRET>
-Content-Type: application/json
-
-[{ "kind": "tier_update", "summary": "...", "agent": "price-watch", "agent_notes": "...", "payload": { ... } }]
-```
-
-Then they trigger the auto-approval pass, which applies only sourced price and
-availability changes from a trusted domain; everything else waits for a human at
-`/admin/review`:
-
-```
-POST https://open-robot-index.vercel.app/api/proposals/apply
-Authorization: Bearer <CRON_SECRET>
+```sql
+insert into proposals (kind, target_table, summary, agent, agent_notes, payload)
+values ('tier_update', 'robots', 'unitree-go2: Go2 Pro $2,800 → $2,600', 'price-watch',
+        'Price on the official store dropped; page fetched.', '{...json payload...}'::jsonb);
 ```
 
-The secret is stored in Supabase Vault under the name `cron_secret`. Read it with the
-Supabase MCP connector: `select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret'`
-against project `bdtvvzkoocymycqafkqb`. Never print it, never commit it.
+Insert several rows in one statement. You may run `select` on any table for context.
+You may not `update`, `delete`, or `insert` into any table other than `proposals`.
+
+If outbound HTTP works in your session, the equivalent API is
+`POST https://open-robot-index.vercel.app/api/proposals` with
+`Authorization: Bearer <secret>` (secret from
+`select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret'`; never print it).
+Either path is fine; the table is the same.
+
+Auto-approval runs daily via Vercel Cron (`/api/proposals/apply`). It applies only
+`tier_update` and availability changes whose first source is on a trusted domain
+(the manufacturer's site or a domain already cited for that robot), was actually
+fetched (`page_fetched: true`), and carries a verbatim `quote` under 15 words that
+contains the value. Everything else waits for a human at `/admin/review`.
+
+## When page fetches are blocked
+
+If WebFetch or curl is denied by the network policy, you may still use WebSearch
+result snippets as evidence. Then set `page_fetched: false` on the source, put the
+snippet text in `quote` only if it is verbatim, and say in `agent_notes` that the page
+was not fetched. Such proposals are never auto-applied; a human checks them. Filing a
+held proposal is better than filing nothing, as long as the URL is the original page.
 
 ## Payload shapes
 
 See `src/lib/proposals.ts` for the exact TypeScript types. In short:
 
-- `tier_update`: `{ robot_slug, tier_name, new_tier?, before: { price_usd, price_note }, after: { price_usd, price_note, currency_note?, includes_sdk?, compute?, availability? }, sources: [{ url, title, publisher, quote, field }] }`
+- `tier_update`: `{ robot_slug, tier_name, new_tier?, before: { price_usd, price_note }, after: { price_usd, price_note, currency_note?, includes_sdk?, compute?, availability? }, sources: [{ url, title, publisher, quote, field, page_fetched }] }`
 - `field_update`: `{ robot_slug, field, before, after, note, sources }` where `field` is one of the editable robot fields listed in `EDITABLE_ROBOT_FIELDS`.
 - `new_robot`: `{ company: { slug, name, country, website, description }, robot: { ...all robot columns except ids... }, tiers: [...], sources: [...] }` with `confidence: "verify"`.
 - `news_item`: `{ title, summary, url, publisher, published_at, category, robot_slugs, company_slugs }`.

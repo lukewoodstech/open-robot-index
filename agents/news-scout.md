@@ -21,7 +21,7 @@ Skip: funding rounds (unless they change a product's price or availability), gen
 4. For each real item, open the original source (WebFetch) and confirm the fact.
 5. File a `news_item` proposal per story: title, a 2 to 3 sentence summary in your own words, the original URL (not an aggregator), publisher, published date, category, and `robot_slugs` for robots in the index it concerns.
 6. If a story changes a price or availability for a robot in the index, ALSO file the matching `tier_update` so the data changes, not just the feed.
-7. POST proposals to `/api/proposals`, then `/api/proposals/apply`.
+7. Insert proposals via the Supabase connector (or POST `/api/proposals` if HTTP works).
 8. Summarise: stories found, filed, skipped and why.
 
-Do not modify the repo. Do not write to any table.
+Do not modify the repo. Do not write to any table other than `proposals`.
