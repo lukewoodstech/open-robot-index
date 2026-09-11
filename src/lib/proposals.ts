@@ -12,6 +12,8 @@ export interface ProposalSource {
   /** Under 15 words. */
   quote?: string;
   field?: string;
+  /** True only if the agent actually fetched this page and read the value on it. */
+  page_fetched?: boolean;
 }
 
 /** A price, note or availability change on one tier of an existing robot. */
@@ -238,8 +240,12 @@ export async function autoApprovable(db: SupabaseClient, p: Proposal): Promise<{
       const d = (row as unknown as { sources: { domain: string | null } | null }).sources?.domain;
       if (d) trusted.add(d);
     }
-    const srcHost = host(pl.sources[0].url);
+    const src = pl.sources[0];
+    const srcHost = host(src.url);
     if (!trusted.has(srcHost)) return { ok: false, reason: `source ${srcHost} is not a trusted domain for ${robot.slug}` };
+    if (!src.page_fetched || !src.quote?.trim()) {
+      return { ok: false, reason: "source page was not fetched with a verbatim quote; needs a human" };
+    }
     if (p.kind === "tier_update") {
       const t = pl as TierUpdatePayload;
       if (t.new_tier) return { ok: false, reason: "new SKU needs a human" };

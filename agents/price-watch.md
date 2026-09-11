@@ -18,14 +18,14 @@ source shows today.
    ```
    Also read `select summary from proposals where status = 'pending'` so you do not duplicate.
 2. Work through robots oldest `last_checked` first. Budget: all robots if time allows, at least the 10 stalest.
-3. For each tier, fetch the cited `source_url` (WebFetch). If it no longer shows a price, search the manufacturer store, then at most two resellers.
+3. For each tier, fetch the cited `source_url` (WebFetch). If it no longer shows a price, search the manufacturer store, then at most two resellers. If fetches are blocked by the network policy, use WebSearch snippets and set `page_fetched: false` (see README); still file the proposal so a human can check it.
 4. Compare. File a `tier_update` proposal when:
    - the price differs from `price_usd` by any amount;
    - the SKU name changed or was discontinued (set `price_note` to say so);
    - availability changed (in stock, sold out, preorder, discontinued) — put it in `after.availability`.
    Include `before` from the database and the exact page URL in `sources[0]` with a quote under 15 words that contains the price.
 5. If a source is unreachable twice, file nothing for that tier; mention it in your final summary.
-6. POST all proposals to `/api/proposals` in one request, then POST `/api/proposals/apply`.
+6. Insert all proposals into `proposals` via the Supabase connector (or POST `/api/proposals` if HTTP works). Auto-approval runs on the daily cron; you do not need to trigger it.
 7. Finish with a short summary: robots checked, proposals filed, which were auto-approved, which are waiting for a human, and any pages that blocked you.
 
-Do not modify the repo. Do not write to any table.
+Do not modify the repo. Do not write to any table other than `proposals`.

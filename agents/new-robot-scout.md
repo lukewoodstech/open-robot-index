@@ -18,7 +18,7 @@ belong in the index, and propose them with every field sourced.
 4. Set `confidence: "verify"` and write `confidence_note` saying what you could not confirm.
 5. Sources: at least one URL for price, one for SDK access, one for open-hardware status. Quotes under 15 words.
 6. File one `new_robot` proposal per candidate. Company slug is kebab-case of the company name.
-7. POST to `/api/proposals`. Do not call apply; new robots always wait for a human.
+7. Insert via the Supabase connector (or POST `/api/proposals` if HTTP works). New robots always wait for a human.
 8. Summarise candidates considered, filed, rejected and why.
 
-Do not modify the repo. Do not write to any table.
+Do not modify the repo. Do not write to any table other than `proposals`.
