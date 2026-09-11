@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfidenceMark, SdkBadge } from "@/components/badges";
 import { RobotThumb, heroImage } from "@/components/robot-thumb";
-import { getRobot, getRobotSlugs, getRobots } from "@/lib/data";
+import { getNews, getRobot, getRobotSlugs, getRobots } from "@/lib/data";
 import { isoDate, num, usd } from "@/lib/format";
 import {
   CONFIDENCE_LABELS,
@@ -41,8 +41,9 @@ const SDK_VERDICT: Record<string, string> = {
 
 export default async function RobotPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [r, all] = await Promise.all([getRobot(slug), getRobots()]);
+  const [r, all, news] = await Promise.all([getRobot(slug), getRobots(), getNews()]);
   if (!r) notFound();
+  const related_news = news.filter((n) => n.robot_ids.includes(r.id)).slice(0, 8);
 
   const hero = heroImage(r);
   const gallery = r.images.filter((i) => i.id !== hero?.id);
@@ -64,8 +65,10 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
       <header className="mb-6">
         <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight leading-none">{r.name}</h1>
         <p className="mt-2 text-muted">
-          {r.company.name}
+          <Link href={`/companies/${r.company.slug}`} className="hover:text-text underline decoration-line">{r.company.name}</Link>
           {r.company.country ? ` · ${r.company.country}` : ""} · {FORM_LABELS[r.form]}
+          <span className="mx-2">·</span>
+          <Link href={`/compare?a=${r.slug}`} className="text-accent hover:underline">Compare</Link>
         </p>
       </header>
 
@@ -244,7 +247,7 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
         </ul>
         <p className="mt-4 text-sm text-muted">
           Something wrong?{" "}
-          <Link href={`/about#corrections`} className="text-accent hover:underline">
+          <Link href={`/corrections?robot=${r.slug}`} className="text-accent hover:underline">
             Report a correction for {r.name}
           </Link>
           .
@@ -274,9 +277,21 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      <section className="mt-10 text-sm text-muted">
-        <h2 className="text-lg font-semibold tracking-tight text-text">Related news</h2>
-        <p className="mt-2">No buyer-relevant news recorded for {r.name} yet. The news feed arrives in a later phase.</p>
+      <section className="mt-10 text-sm">
+        <h2 className="text-lg font-semibold tracking-tight">Related news</h2>
+        {related_news.length === 0 ? (
+          <p className="mt-2 text-muted">No buyer-relevant news recorded for {r.name} yet.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-line/60 max-w-[80ch]">
+            {related_news.map((n) => (
+              <li key={n.id} className="py-3">
+                <a href={n.url} target="_blank" rel="noopener" className="font-medium hover:underline">{n.title}</a>
+                <p className="mt-1 text-muted">{n.summary}</p>
+                <p className="mt-1 text-xs text-muted">{n.category.replace("_", " ")} · {n.publisher ?? ""} · {n.published_at ? isoDate(n.published_at) : ""}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </article>
   );

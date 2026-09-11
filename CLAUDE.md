@@ -10,7 +10,7 @@ A directory of robots real people can buy (roughly under $25K) scored on whether
 
 - Every fact has a source URL and a last-checked date, shown on the page.
 - Every robot has a confidence mark (High / Medium / Verify) and Verify rows say what's contested.
-- AI agents never publish directly. They write proposals to a review queue; a human approves in one tap.
+- AI agents never publish directly. They write proposals to a review queue. Decision 2026-09-11 (Luke): sourced price and availability changes on existing robots from a trusted domain (the manufacturer's site or a domain already cited for that robot) apply automatically via `/api/proposals/apply`; new robots, news, and every other field change wait for a human's one-tap approval at `/admin/review`.
 - SDK access is a three-state field (full / gated / none) with a required note explaining which tier unlocks it. No numeric "openness score."
 - Images come from manufacturer press kits, official product pages, or open-source project repos, stored with the source URL and attribution. No hotlinking random images, no scraped reseller photos.
 
@@ -81,6 +81,13 @@ Phase 4: SEO (per-robot metadata, OG images from the hero + SDK badge), sitemap,
 ## Things deliberately not built
 
 General robotics news, funding tracker, investor directory, user accounts, comments, ratings, affiliate links (for now), any robot over $25K, any agent that can write to public tables.
+
+## Automation (live since 2026-09-11)
+
+- Four cloud routines (Claude Code sessions on this repo) run on schedules and read their playbooks in `agents/`: price watcher (weekly), news scout (twice weekly), new-robot scout (monthly), builder (weekly, works `ROADMAP.md` and opens auto-merging PRs).
+- Agents file proposals only through `POST /api/proposals` with the bearer secret in Supabase Vault (`cron_secret`); the route can write to `proposals` and nothing else.
+- Vercel Cron calls `/api/proposals/apply` daily to run the auto-approval policy in `src/lib/proposals.ts`.
+- `main` is protected: the `build` CI check must pass, and PRs auto-merge when it does. Push via a PR, not directly.
 
 ## Repo conventions
 

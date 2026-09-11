@@ -32,6 +32,12 @@ export default function RootLayout({
             <Link href="/" className="text-muted hover:text-text">
               Robots
             </Link>
+            <Link href="/news" className="text-muted hover:text-text">
+              News
+            </Link>
+            <Link href="/compare" className="text-muted hover:text-text">
+              Compare
+            </Link>
             <Link href="/about" className="text-muted hover:text-text">
               About
             </Link>
@@ -44,7 +50,7 @@ export default function RootLayout({
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 text-xs text-muted flex flex-wrap gap-x-6 gap-y-2">
             <span>Every fact has a source URL and a last-checked date.</span>
             <span>Prices in USD unless noted. Nothing here is affiliate-linked.</span>
-            <Link href="/about#corrections" className="hover:text-text">
+            <Link href="/corrections" className="hover:text-text">
               Report a correction
             </Link>
             {dataSourceLabel() === "seed" && (
