@@ -17,6 +17,12 @@ Without Supabase env vars the site serves `src/data/seed.ts` directly, so every 
 2. **Seed.** `npm run seed` upserts the 22 robots, their tiers and sources. Safe to re-run.
 3. **Vercel.** Push to GitHub, import the repo in Vercel, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables, deploy. Pages revalidate hourly.
 
+## Admin and agents
+
+- `/admin/review` is the proposal queue. Sign in with the email in `ADMIN_EMAILS`. Keys: J/K move, A approve, R reject.
+- `/corrections` files reader corrections into the same queue.
+- Agents file proposals with `POST /api/proposals` (bearer `CRON_SECRET`); `/api/proposals/apply` runs the auto-approval policy (sourced price and availability changes from trusted domains only). See `agents/` for the routine playbooks and `ROADMAP.md` for what the builder works on next.
+
 ## Scripts
 
 | Script | What it does |

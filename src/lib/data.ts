@@ -160,6 +160,31 @@ export const getRobotSlugs = cache(async (): Promise<string[]> => {
   return data.map((r) => r.slug as string);
 });
 
+export interface NewsItem {
+  id: string;
+  title: string;
+  summary: string;
+  url: string;
+  publisher: string | null;
+  published_at: string | null;
+  category: "price_change" | "new_sku" | "sdk_change" | "availability" | "new_open_source" | "funding" | "other";
+  robot_ids: string[];
+  company_ids: string[];
+}
+
+/** Approved news, newest first. Empty on the seed fallback. */
+export const getNews = cache(async (): Promise<NewsItem[]> => {
+  if (!supabaseConfigured()) return [];
+  const { data, error } = await supabasePublic()
+    .from("news_items")
+    .select("id, title, summary, url, publisher, published_at, category, robot_ids, company_ids")
+    .eq("status", "approved")
+    .order("published_at", { ascending: false })
+    .limit(200);
+  if (error) throw new Error(`Supabase news query failed: ${error.message}`);
+  return data as NewsItem[];
+});
+
 export function dataSourceLabel(): "supabase" | "seed" {
   return supabaseConfigured() ? "supabase" : "seed";
 }

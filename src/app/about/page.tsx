@@ -65,9 +65,8 @@ export default function AboutPage() {
 
       <Section title="Corrections" id="corrections">
         <p>
-          If a price, tier or SDK claim is wrong, send the robot name, the correct value and a URL that shows it to{" "}
-          <a href="mailto:corrections@openrobotindex.dev" className="text-accent hover:underline">corrections@openrobotindex.dev</a>.
-          A correction form that files directly into the review queue is coming in the next phase.
+          If a price, tier or SDK claim is wrong, use the{" "}
+          <a href="/corrections" className="text-accent hover:underline">correction form</a>. It asks for the robot, the correct value and a URL that shows it, and files straight into the same review queue the agents use. Sourced price changes from a manufacturer domain apply automatically; everything else waits for a human.
         </p>
       </Section>
 
