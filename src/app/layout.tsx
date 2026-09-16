@@ -3,19 +3,36 @@ import { Geist } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { dataSourceLabel } from "@/lib/data";
+import { SITE_NAME, siteUrl } from "@/lib/site";
 
 const geist = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "Robots under $25K scored on whether you can actually program them: SDK access, price by tier, open hardware, LeRobot support. Every fact sourced and dated.";
+
 export const metadata: Metadata = {
+  // Resolves the generated opengraph-image to an absolute URL, which unfurls need.
+  metadataBase: new URL(siteUrl()),
   title: {
-    default: "Open Robot Index",
-    template: "%s · Open Robot Index",
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Robots under $25K scored on whether you can actually program them: SDK access, price by tier, open hardware, LeRobot support. Every fact sourced and dated.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

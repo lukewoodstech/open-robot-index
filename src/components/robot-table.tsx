@@ -4,12 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ConfidenceMark, SdkBadge } from "@/components/badges";
-import { RobotThumb, heroImage } from "@/components/robot-thumb";
+import { RobotThumb } from "@/components/robot-thumb";
 import { isoDate, usd } from "@/lib/format";
 import {
   FORM_LABELS,
   LEROBOT_LABELS,
   entryTier,
+  heroImage,
   sdkTier,
   type RobotForm,
   type RobotFull,

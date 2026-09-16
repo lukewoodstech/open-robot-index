@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfidenceMark, SdkBadge } from "@/components/badges";
-import { RobotThumb, heroImage } from "@/components/robot-thumb";
+import { RobotThumb } from "@/components/robot-thumb";
 import { getNews, getRobot, getRobotSlugs, getRobots } from "@/lib/data";
 import { isoDate, num, usd } from "@/lib/format";
 import {
@@ -11,7 +11,9 @@ import {
   FORM_LABELS,
   LEROBOT_LABELS,
   SDK_LABELS,
+  SDK_VERDICT,
   entryTier,
+  heroImage,
   sdkTier,
 } from "@/lib/types";
 
@@ -27,17 +29,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const r = await getRobot(slug);
   if (!r) return { title: "Not found" };
   const t = sdkTier(r);
+  const title = `${r.name} · ${r.company.name}`;
+  const description = `${r.name} by ${r.company.name}: SDK ${SDK_LABELS[r.sdk_access].toLowerCase()}${t?.price_usd != null ? ` from ${usd(t.price_usd)}` : ""}. ${r.summary}`;
   return {
     title: r.name,
-    description: `${r.name} by ${r.company.name}: SDK ${SDK_LABELS[r.sdk_access].toLowerCase()}${t?.price_usd != null ? ` from ${usd(t.price_usd)}` : ""}. ${r.summary}`,
+    description,
+    // Without these the page would inherit the site-wide openGraph block and
+    // every robot would unfurl under the same title.
+    openGraph: { type: "article", title, description, url: `/robots/${r.slug}` },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
-
-const SDK_VERDICT: Record<string, string> = {
-  full: "You can program this. The SDK comes with every unit.",
-  gated: "You can program this, but only on a specific tier.",
-  none: "No developer SDK is offered.",
-};
 
 export default async function RobotPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

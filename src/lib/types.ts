@@ -28,6 +28,13 @@ export const SDK_LABELS: Record<SdkAccess, string> = {
   none: "None",
 };
 
+/** The one-line answer to "can I write code for this?", shown on the robot page and its card. */
+export const SDK_VERDICT: Record<SdkAccess, string> = {
+  full: "You can program this. The SDK comes with every unit.",
+  gated: "You can program this, but only on a specific tier.",
+  none: "No developer SDK is offered.",
+};
+
 export const LEROBOT_LABELS: Record<LerobotSupport, string> = {
   native: "Native",
   supported: "Supported",
@@ -118,6 +125,11 @@ export interface RobotFull extends Robot {
   tiers: RobotTier[];
   sources: Source[];
   images: RobotImage[];
+}
+
+/** The image to lead with: the hero if one is on file, else the first image. */
+export function heroImage(r: RobotFull): RobotImage | null {
+  return r.images.find((i) => i.kind === "hero") ?? r.images[0] ?? null;
 }
 
 /** The lowest priced tier, used for the index table and sorting. */
