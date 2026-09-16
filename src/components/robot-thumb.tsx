@@ -1,10 +1,6 @@
 import Image from "next/image";
 import type { RobotFull } from "@/lib/types";
-import { FORM_LABELS } from "@/lib/types";
-
-export function heroImage(r: RobotFull) {
-  return r.images.find((i) => i.kind === "hero") ?? r.images[0] ?? null;
-}
+import { FORM_LABELS, heroImage } from "@/lib/types";
 
 /** Small image tile used in table rows and cards. Falls back to a labelled panel. */
 export function RobotThumb({
