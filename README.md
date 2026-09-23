@@ -1,45 +1,52 @@
+
 # Open Robot Index
 
-A directory of robots under $25K scored on whether you can actually program them. Every fact has a source URL and a last-checked date. See [CLAUDE.md](CLAUDE.md) for the full brief.
+**Robots under $25K, ranked on whether you can actually program them.**
 
-## Run locally (no backend needed)
+[Live site](https://open-robot-index.vercel.app) · Next.js 15 · Supabase · Tailwind v4 · Claude agents
+
+<img alt="Open Robot Index home page" src="https://github.com/user-attachments/assets/32411894-235e-4782-8588-5e0853ba0775" />
+
+## Why I built it
+
+I wanted to get into robotics and couldn't find a straight answer to a simple question: if I buy this robot, do I get a real SDK, or is it locked behind a higher tier? Spec pages bury it and reviews skip it. So I built the index I wanted. Every robot gets an SDK verdict (full, gated or none), the tier that unlocks it, supported languages, LeRobot and sim support, and a source URL plus a last checked date for every fact.
+
+## What's in it
+
+- **Index table** with filter chips, sortable columns and rows that expand inline for the details
+- **Robot, company and compare pages**, plus a news feed for price cuts, new SKUs and SDK releases
+- **Corrections form** so readers can flag anything wrong
+- **Agent pipeline**: Claude agents watch prices, scout news and find new robots. They never publish. They file proposals into a review queue
+- **Review queue** at `/admin/review` built for speed: J/K to move, A to approve, R to reject
+- **Per robot OG images**, sitemap and robots.txt so shared links look right
+
+## Design decisions
+
+- **Color only where it means something.** The UI is graphite and off white with one accent for interaction. The only other colors are the three SDK states, so green, amber and red always mean the same thing.
+- **Tabular numerals for all data** (Geist) so prices and counts line up and scan fast.
+- **One motion moment.** Rows expand with a `grid-template-rows` transition. Nothing else moves on its own, and it all respects `prefers-reduced-motion`.
+- **Accessible tables.** `aria-sort` on columns, `aria-pressed` on filters, `aria-expanded` on rows, visible focus rings.
+- **Humans stay in the loop.** Agents propose, a person approves. Only low risk, well sourced price changes from trusted domains can auto approve.
+- **Works without a backend.** With no Supabase keys the site reads straight from `src/data/seed.ts`, so anyone can clone it and run it in seconds.
+
+## Run it
 
 ```bash
 npm install
 npm run dev
 ```
 
-Without Supabase env vars the site serves `src/data/seed.ts` directly, so every page works offline.
-
-## Deploy (Phase 1)
-
-1. **Supabase.** Create a project. In the SQL editor run `supabase/migrations/0001_init.sql`. Copy the project URL, anon key and service role key into `.env.local` (see `.env.example`).
-2. **Seed.** `npm run seed` upserts the 22 robots, their tiers and sources. Safe to re-run.
-3. **Vercel.** Push to GitHub, import the repo in Vercel, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables, deploy. Pages revalidate hourly.
-
-## Admin and agents
-
-- `/admin/review` is the proposal queue. Sign in with the email in `ADMIN_EMAILS`. Keys: J/K move, A approve, R reject.
-- `/corrections` files reader corrections into the same queue.
-- Agents file proposals with `POST /api/proposals` (bearer `CRON_SECRET`); `/api/proposals/apply` runs the auto-approval policy (sourced price and availability changes from trusted domains only). See `agents/` for the routine playbooks and `ROADMAP.md` for what the builder works on next.
-
-## Scripts
+That's it. No env vars needed for local dev. To run the full thing with Supabase, copy `.env.example` to `.env.local`, run `supabase/migrations/0001_init.sql`, then `npm run seed`.
 
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Dev server |
 | `npm run build` | Production build |
-| `npm run typecheck` | `tsc --noEmit` |
+| `npm run typecheck` | Type check |
 | `npm run seed` | Seed Supabase from `src/data/seed.ts` |
 
-## Layout
+## Stack
 
-```
-supabase/migrations/   schema (enums, tables, RLS: public select only)
-scripts/seed.ts        seed script (service role key)
-src/data/seed.ts       the 22-robot DATA array, all last_checked 2026-09-03
-src/lib/data.ts        the only data access layer (Supabase or seed fallback)
-src/lib/types.ts       shared types and label maps
-src/components/        SDK badge, confidence mark, index table
-src/app/               / , /robots/[slug], /about
-```
+Next.js 15 (App Router), React 19, Tailwind v4, Supabase (Postgres with RLS and auth), Vercel with a daily cron, Anthropic API for the agents, GitHub Actions for lint, typecheck and build.
+
+See [ROADMAP.md](ROADMAP.md) for what's next and [agents/](agents) for the agent playbooks.
