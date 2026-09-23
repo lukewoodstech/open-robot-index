@@ -4,6 +4,7 @@ import { SdkBadge } from "@/components/badges";
 export const metadata: Metadata = {
   title: "About",
   description: "How the Open Robot Index scores SDK access, what the confidence marks mean, and how corrections and agent proposals are reviewed.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

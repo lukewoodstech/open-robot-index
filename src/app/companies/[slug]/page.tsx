@@ -18,7 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const robots = (await getRobots()).filter((r) => r.company.slug === slug);
   if (!robots.length) return { title: "Not found" };
-  return { title: robots[0].company.name, description: robots[0].company.description ?? undefined };
+  return {
+    title: robots[0].company.name,
+    description: robots[0].company.description ?? undefined,
+    alternates: { canonical: `/companies/${slug}` },
+  };
 }
 
 export default async function CompanyPage({ params }: { params: Promise<{ slug: string }> }) {

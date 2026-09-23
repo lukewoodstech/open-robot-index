@@ -6,13 +6,48 @@ import { getRobots } from "@/lib/data";
 import { isoDate, num, usd } from "@/lib/format";
 import { CONFIDENCE_LABELS, FORM_LABELS, LEROBOT_LABELS, entryTier, sdkTier, type RobotFull } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Compare" };
 export const revalidate = 3600;
 
-export default async function ComparePage({ searchParams }: { searchParams: Promise<{ a?: string; b?: string; c?: string }> }) {
+/** The robots named by ?a=&b=&c=, in order, without repeats. */
+async function pickedRobots(sp: CompareParams): Promise<RobotFull[]> {
+  const { a, b, c } = await sp;
+  const all = await getRobots();
+  const slugs = [a, b, c].filter((s): s is string => Boolean(s));
+  return Array.from(new Set(slugs))
+    .map((s) => all.find((r) => r.slug === s))
+    .filter((r): r is RobotFull => Boolean(r));
+}
+
+export async function generateMetadata({ searchParams }: { searchParams: CompareParams }): Promise<Metadata> {
+  const robots = await pickedRobots(searchParams);
+  if (robots.length < 2) {
+    return {
+      title: "Compare",
+      description: "Two or three robots side by side: SDK access, price by tier, open hardware, LeRobot support.",
+      alternates: { canonical: "/compare" },
+    };
+  }
+  // The same robots in a different order are the same comparison, so the slugs
+  // are sorted before they go into the canonical.
+  const query = [...robots]
+    .map((r) => r.slug)
+    .sort()
+    .map((slug, i) => `${"abc"[i]}=${encodeURIComponent(slug)}`)
+    .join("&");
+  const title = robots.map((r) => r.name).join(" vs ");
+  return {
+    title,
+    description: `${title} compared on SDK access, what the SDK tier costs, open hardware, LeRobot support and availability. Every fact sourced and dated.`,
+    alternates: { canonical: `/compare?${query}` },
+  };
+}
+
+type CompareParams = Promise<{ a?: string; b?: string; c?: string }>;
+
+export default async function ComparePage({ searchParams }: { searchParams: CompareParams }) {
   const { a, b, c } = await searchParams;
   const all = await getRobots();
-  const picked = [a, b, c].filter(Boolean).map((s) => all.find((r) => r.slug === s)).filter((r): r is RobotFull => Boolean(r));
+  const picked = await pickedRobots(searchParams);
 
   return (
     <div>
