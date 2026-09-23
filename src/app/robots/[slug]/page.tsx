@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description,
     // Without these the page would inherit the site-wide openGraph block and
     // every robot would unfurl under the same title.
+    alternates: { canonical: `/robots/${r.slug}` },
     openGraph: { type: "article", title, description, url: `/robots/${r.slug}` },
     twitter: { card: "summary_large_image", title, description },
   };

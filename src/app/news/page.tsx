@@ -3,7 +3,12 @@ import Link from "next/link";
 import { getNews, getRobots } from "@/lib/data";
 import { isoDate } from "@/lib/format";
 
-export const metadata: Metadata = { title: "News", description: "What changed for buyers: price cuts, new SKUs, SDK releases, stock changes, and new open-source rigs under $25K." };
+// One canonical for every ?category= view: the filters are the same items sliced.
+export const metadata: Metadata = {
+  title: "News",
+  description: "What changed for buyers: price cuts, new SKUs, SDK releases, stock changes, and new open-source rigs under $25K.",
+  alternates: { canonical: "/news" },
+};
 export const revalidate = 1800;
 
 const CATEGORIES = ["price_change", "new_sku", "sdk_change", "availability", "new_open_source", "funding", "other"] as const;

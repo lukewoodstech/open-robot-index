@@ -4,7 +4,7 @@ import { getRobots } from "@/lib/data";
 import { EDITABLE_ROBOT_FIELDS } from "@/lib/proposals";
 import { submitCorrection } from "./actions";
 
-export const metadata: Metadata = { title: "Report a correction" };
+export const metadata: Metadata = { title: "Report a correction", alternates: { canonical: "/corrections" } };
 export const dynamic = "force-dynamic";
 
 export default async function CorrectionsPage({ searchParams }: { searchParams: Promise<{ robot?: string; sent?: string; error?: string }> }) {

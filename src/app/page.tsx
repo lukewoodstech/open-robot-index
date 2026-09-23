@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import { RobotTable } from "@/components/robot-table";
 import { getRobots } from "@/lib/data";
 import { isoDate, usd } from "@/lib/format";
 import { entryTier } from "@/lib/types";
 
+// Canonical is set per page rather than in the root layout: inherited from the
+// layout it would point every route at "/".
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 export const revalidate = 3600;
 
 export default async function IndexPage() {
