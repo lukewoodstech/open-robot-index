@@ -33,36 +33,36 @@ export default async function CorrectionsPage({ searchParams }: { searchParams: 
         <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
         <label className="block">
           <span className="text-muted">Robot</span>
-          <select name="robot" defaultValue={robot ?? ""} required className="mt-1 w-full rounded-md border border-line bg-panel px-3 py-2">
+          <select name="robot" defaultValue={robot ?? ""} required className="tap mt-1 w-full rounded-md border border-line bg-panel px-3 py-2">
             <option value="" disabled>Choose a robot</option>
             {robots.map((r) => <option key={r.slug} value={r.slug}>{r.name}</option>)}
           </select>
         </label>
         <label className="block">
           <span className="text-muted">What is wrong</span>
-          <select name="field" defaultValue="price" className="mt-1 w-full rounded-md border border-line bg-panel px-3 py-2">
+          <select name="field" defaultValue="price" className="tap mt-1 w-full rounded-md border border-line bg-panel px-3 py-2">
             <option value="price">Price or tier</option>
             {EDITABLE_ROBOT_FIELDS.map((f) => <option key={f} value={f}>{f.replace(/_/g, " ")}</option>)}
           </select>
         </label>
         <label className="block">
           <span className="text-muted">Tier name (if price)</span>
-          <input name="tier" className="mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" placeholder="e.g. Go2 Pro" />
+          <input name="tier" className="tap mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" placeholder="e.g. Go2 Pro" />
         </label>
         <label className="block">
           <span className="text-muted">Correct value</span>
-          <input name="after" required className="mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" placeholder="e.g. $2,499 as of today" />
+          <input name="after" required className="tap mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" placeholder="e.g. $2,499 as of today" />
         </label>
         <label className="block">
           <span className="text-muted">Source URL that shows it</span>
-          <input name="url" type="url" required className="mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" placeholder="https://" />
+          <input name="url" type="url" required className="tap mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" placeholder="https://" />
         </label>
         <label className="block">
           <span className="text-muted">Anything else</span>
           <textarea name="note" rows={3} className="mt-1 w-full rounded-md border border-line bg-panel px-3 py-2" />
         </label>
         {error && <p className="text-sdk-none">{error}</p>}
-        <button className="rounded-md bg-accent px-4 py-2 font-medium text-bg">Send to review</button>
+        <button className="tap rounded-md bg-accent px-4 py-2 font-medium text-bg">Send to review</button>
       </form>
     </div>
   );

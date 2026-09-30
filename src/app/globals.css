@@ -52,6 +52,21 @@ a {
   border-radius: 4px;
 }
 
+/* Touch targets. Below the sm breakpoint a standalone control is at least 40px
+   tall; on desktop the pointer is precise and the design stays dense. Inline
+   links inside a sentence keep their natural size (WCAG 2.5.8 exempts them). */
+@media (max-width: 639px) {
+  .tap {
+    min-height: 40px;
+  }
+  a.tap,
+  button.tap,
+  label.tap {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 /* The one motion moment on the index: row expand. */
 .row-expand {
   display: grid;

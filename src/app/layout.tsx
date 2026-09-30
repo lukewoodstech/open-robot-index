@@ -42,20 +42,26 @@ export default function RootLayout({
     <html lang="en" className={geist.variable}>
       <body className="min-h-screen flex flex-col">
         <header className="border-b border-line">
-          <nav className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center gap-6 text-sm">
-            <Link href="/" className="font-semibold tracking-tight text-text">
+          <nav className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center gap-4 sm:gap-6 text-sm">
+            <Link
+              href="/"
+              className="inline-flex items-center h-full shrink-0 whitespace-nowrap font-semibold tracking-tight text-text"
+            >
               Open Robot Index
             </Link>
-            <Link href="/" className="text-muted hover:text-text">
+            {/* The wordmark already links to the index, so below sm the duplicate
+                label is dropped: with it the five items did not fit 380px and the
+                wordmark wrapped onto three lines. */}
+            <Link href="/" className="hidden sm:inline-flex items-center h-full px-1 text-muted hover:text-text">
               Robots
             </Link>
-            <Link href="/news" className="text-muted hover:text-text">
+            <Link href="/news" className="inline-flex items-center h-full px-1 text-muted hover:text-text">
               News
             </Link>
-            <Link href="/compare" className="text-muted hover:text-text">
+            <Link href="/compare" className="inline-flex items-center h-full px-1 text-muted hover:text-text">
               Compare
             </Link>
-            <Link href="/about" className="text-muted hover:text-text">
+            <Link href="/about" className="inline-flex items-center h-full px-1 text-muted hover:text-text">
               About
             </Link>
           </nav>
@@ -67,7 +73,7 @@ export default function RootLayout({
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 text-xs text-muted flex flex-wrap gap-x-6 gap-y-2">
             <span>Every fact has a source URL and a last-checked date.</span>
             <span>Prices in USD unless noted. Nothing here is affiliate-linked.</span>
-            <Link href="/corrections" className="hover:text-text">
+            <Link href="/corrections" className="tap hover:text-text">
               Report a correction
             </Link>
             {dataSourceLabel() === "seed" && (

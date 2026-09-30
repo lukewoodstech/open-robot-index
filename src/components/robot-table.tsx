@@ -166,12 +166,12 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
           options={PRICE_CEILINGS.map((p) => ({ value: String(p.value), label: p.label }))}
         />
 
-        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+        <label className="tap inline-flex items-center gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={lerobotOnly}
             onChange={(e) => setLerobotOnly(e.target.checked)}
-            className="size-3.5 accent-accent"
+            className="size-4.5 sm:size-3.5 accent-accent"
           />
           <span className="text-muted">LeRobot</span>
         </label>
@@ -179,7 +179,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
         <span className="ml-auto text-muted tabular-nums">
           {rows.length} of {robots.length}
           {filtersActive && (
-            <button onClick={clearFilters} className="ml-3 text-accent hover:underline">
+            <button onClick={clearFilters} className="tap ml-3 text-accent hover:underline">
               Clear
             </button>
           )}
@@ -194,7 +194,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
             {sdk !== "all" ? ", or switch SDK to All" : ""}
             {lerobotOnly ? ", or turn off LeRobot" : ""}.
           </p>
-          <button onClick={clearFilters} className="mt-4 text-accent hover:underline">
+          <button onClick={clearFilters} className="tap mt-4 text-accent hover:underline">
             Clear all filters
           </button>
         </div>
@@ -389,7 +389,7 @@ function Chip({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-md border px-2.5 py-1 text-xs leading-tight ${
+      className={`tap rounded-md border px-3 py-2 sm:px-2.5 sm:py-1 text-xs leading-tight ${
         active ? `border-line bg-panel-2 ${toneClass || "text-text"}` : `border-transparent text-muted hover:text-text`
       }`}
     >
@@ -415,7 +415,7 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-line bg-panel px-2 py-1 text-xs text-text"
+        className="tap rounded-md border border-line bg-panel px-2 py-2 sm:py-1 text-xs text-text"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
