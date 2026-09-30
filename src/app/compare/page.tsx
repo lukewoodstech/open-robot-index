@@ -56,15 +56,15 @@ export default async function ComparePage({ searchParams }: { searchParams: Comp
 
       <form className="mt-4 flex flex-wrap items-end gap-3 text-sm" method="get">
         {(["a", "b", "c"] as const).map((k, i) => (
-          <label key={k} className="block">
+          <label key={k} className="block w-full sm:w-auto">
             <span className="text-muted">Robot {i + 1}{i === 2 ? " (optional)" : ""}</span>
-            <select name={k} defaultValue={[a, b, c][i] ?? ""} className="mt-1 block rounded-md border border-line bg-panel px-2 py-1.5 min-w-[200px]">
+            <select name={k} defaultValue={[a, b, c][i] ?? ""} className="tap mt-1 block w-full rounded-md border border-line bg-panel px-2 py-1.5 sm:w-auto sm:min-w-[200px]">
               <option value="">—</option>
               {all.map((r) => <option key={r.slug} value={r.slug}>{r.name}</option>)}
             </select>
           </label>
         ))}
-        <button className="rounded-md bg-accent px-3 py-1.5 font-medium text-bg">Compare</button>
+        <button className="tap rounded-md bg-accent px-3 py-1.5 font-medium text-bg">Compare</button>
       </form>
 
       {picked.length < 2 ? (
@@ -78,7 +78,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Comp
                 {picked.map((r) => (
                   <th key={r.id} className="text-left font-normal pb-3 pr-4 align-bottom">
                     <RobotThumb r={r} size={0} className="!w-full aspect-[4/3] mb-2" sizes="33vw" />
-                    <Link href={`/robots/${r.slug}`} className="font-medium text-base hover:underline">{r.name}</Link>
+                    <Link href={`/robots/${r.slug}`} className="tap font-medium text-base hover:underline">{r.name}</Link>
                     <div className="text-xs text-muted">{r.company.name}</div>
                   </th>
                 ))}

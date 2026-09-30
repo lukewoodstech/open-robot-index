@@ -60,7 +60,7 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
   return (
     <article>
       <nav className="text-xs text-muted mb-4">
-        <Link href="/" className="hover:text-text">Robots</Link>
+        <Link href="/" className="tap px-1 -ml-1 hover:text-text">Robots</Link>
         <span className="mx-1.5">/</span>
         <span>{r.name}</span>
       </nav>
@@ -151,7 +151,9 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
       {/* Tiers */}
       <section className="mt-10">
         <h2 className="text-lg font-semibold tracking-tight">Price by tier</h2>
-        <div className="mt-3 overflow-x-auto">
+        {/* Six columns do not fit a phone, so below sm the same rows are stacked
+            as cards rather than left in a horizontal scroller. */}
+        <div className="mt-3 hidden overflow-x-auto sm:block">
           <table className="w-full text-sm">
             <thead className="text-muted text-left">
               <tr className="border-b border-line">
@@ -182,6 +184,27 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
             </tbody>
           </table>
         </div>
+
+        <ul className="mt-3 divide-y divide-line/60 text-sm sm:hidden">
+          {r.tiers.map((t) => (
+            <li key={t.id} className="py-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-medium">{t.tier_name}</span>
+                <span className="tabular-nums whitespace-nowrap">{usd(t.price_usd)}</span>
+              </div>
+              {t.currency_note && <div className="mt-0.5 text-right text-xs text-muted">{t.currency_note}</div>}
+              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+                <span>
+                  SDK:{" "}
+                  {t.includes_sdk ? <span className="text-sdk-full">Included</span> : <span>No</span>}
+                </span>
+                {t.compute && <span>Compute: {t.compute}</span>}
+                <span>Checked {isoDate(t.checked_at)}</span>
+              </div>
+              {t.price_note && <p className="mt-1 text-xs text-muted">{t.price_note}</p>}
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* Spec strip */}
@@ -203,7 +226,7 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
           label="Company"
           value={
             r.company.website ? (
-              <a href={r.company.website} target="_blank" rel="noopener" className="underline hover:text-accent">
+              <a href={r.company.website} target="_blank" rel="noopener" className="tap underline hover:text-accent">
                 {r.company.name}
               </a>
             ) : (

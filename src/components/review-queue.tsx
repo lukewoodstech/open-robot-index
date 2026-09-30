@@ -78,14 +78,14 @@ export function ReviewQueue({ proposals, readOnly }: { proposals: Proposal[]; re
                       <button
                         disabled={pending}
                         onClick={(e) => { e.stopPropagation(); act("approve", p.id); }}
-                        className="rounded-md bg-sdk-full/15 border border-sdk-full/40 text-sdk-full px-3 py-1 hover:bg-sdk-full/25 approve-btn"
+                        className="tap rounded-md bg-sdk-full/15 border border-sdk-full/40 text-sdk-full px-3 py-1 hover:bg-sdk-full/25 approve-btn"
                       >
                         Approve
                       </button>
                       <button
                         disabled={pending}
                         onClick={(e) => { e.stopPropagation(); act("reject", p.id); }}
-                        className="rounded-md border border-line px-3 py-1 text-muted hover:text-text"
+                        className="tap rounded-md border border-line px-3 py-1 text-muted hover:text-text"
                       >
                         Reject
                       </button>

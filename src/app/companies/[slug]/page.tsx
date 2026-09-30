@@ -36,7 +36,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
   return (
     <article>
       <nav className="text-xs text-muted mb-4">
-        <Link href="/" className="hover:text-text">Robots</Link>
+        <Link href="/" className="tap px-1 -ml-1 hover:text-text">Robots</Link>
         <span className="mx-1.5">/</span>
         <span>{company.name}</span>
       </nav>
