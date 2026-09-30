@@ -56,7 +56,7 @@ public table, keep every fact sourced and dated.
   filters, compare and correction form fields, review-queue Approve/Reject) is at
   least 40px on phones while desktop keeps its density, and the robot page's
   six-column tier table stacks into cards instead of an in-page scroller. No
-  horizontal scroll on any page at 380px (#PR). Inline links inside a sentence keep
+  horizontal scroll on any page at 380px (#6). Inline links inside a sentence keep
   their natural size, which WCAG 2.5.8 exempts.
 - Per-robot OG images: `opengraph-image` cards for all 23 robots plus a site default,
   drawn with next/og in Geist on the graphite palette (#3).
