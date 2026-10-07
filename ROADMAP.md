@@ -23,23 +23,20 @@ public table, keep every fact sourced and dated.
    > read, and `autoApprovable` in `src/lib/proposals.ts` holds unfetched sources for a
    > human by design. Needs a human: either allowlist those domains for the routine, or
    > do this check by hand.
-2. **Compare picker on the index.** A checkbox on each row (max 3) and a sticky
-   "Compare (n)" bar that links to `/compare?a=&b=&c=`. Acceptance: works with
-   keyboard; state survives filter changes.
-3. **Gallery images.** For robots with only a hero, add one or two gallery images from
+2. **Gallery images.** For robots with only a hero, add one or two gallery images from
    the same manufacturer page or repo, stored under `public/robots/<slug>/` with source
    URL and attribution in `src/data/seed.ts`. Prefer JPEG or PNG: the OG cards are
    drawn by resvg, which cannot decode WebP, so a `.webp` hero needs a `hero.og.jpg`
    sibling. Acceptance: at least ten robots have a gallery; every image has
    attribution shown.
-4. **Weekly digest page.** `/digest/[week]` summarising approved news and applied
+3. **Weekly digest page.** `/digest/[week]` summarising approved news and applied
    proposals for the week, written from the data (no LLM at render time). Acceptance:
    the current week renders; older weeks are linked.
-5. **Playwright smoke tests.** Index loads with 20+ rows, a robot page shows a source
+4. **Playwright smoke tests.** Index loads with 20+ rows, a robot page shows a source
    list, compare renders two robots, corrections form validates. Runs in CI.
-6. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
+5. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
    labels on all selects, `aria-sort` on sortable headers, skip link.
-7. **Company logos.** From official press kits or the repo's own assets only, with
+6. **Company logos.** From official press kits or the repo's own assets only, with
    `logo_source` set. Show on company pages and in the index row's company line.
 
 ## Done
@@ -48,6 +45,12 @@ public table, keep every fact sourced and dated.
 - Phase 2: images with attribution, admin review queue, corrections form, compare,
   company pages, news feed, auto-approval of sourced price updates.
 - Agents: price watcher, news scout, new-robot scout, builder (cloud routines).
+- Compare picker on the index: a checkbox on every row and mobile card (three at a
+  time, the rest disabled at the cap) and a sticky bar that names the picks and links
+  to `/compare?a=&b=&c=`. Picks are held above the filters, so a robot the current
+  filters hide stays in the comparison; the checkbox click is stopped at its cell so
+  picking never expands the row. Keyboard throughout: real checkboxes, Space to
+  toggle, chips to remove (#7).
 - Sitemap, robots.txt and canonical URLs: `/sitemap.xml` lists all 23 robots, 22
   companies and the five public pages with real `lastmod` dates; every public page
   declares a canonical, and `/compare` collapses argument order to one URL (#4).

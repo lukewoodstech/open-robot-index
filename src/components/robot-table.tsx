@@ -32,6 +32,9 @@ const FORM_ORDER: RobotForm[] = ["arm", "bimanual", "desktop", "mobile_base", "m
 const SDK_ORDER: Record<SdkAccess, number> = { full: 0, gated: 1, none: 2 };
 const LEROBOT_ORDER = { native: 0, supported: 1, compatible: 2, community: 3, none: 4 };
 
+/** /compare takes a, b and c, so the picker stops at three. */
+const COMPARE_MAX = 3;
+
 export function RobotTable({ robots }: { robots: RobotFull[] }) {
   const [sdk, setSdk] = useState<SdkAccess | "all">("all");
   const [form, setForm] = useState<RobotForm | "all">("all");
@@ -40,6 +43,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [open, setOpen] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string[]>([]);
 
   const formTiles = useMemo(() => {
     return FORM_ORDER.map((f) => {
@@ -106,6 +110,25 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
     setCeiling(Infinity);
     setLerobotOnly(false);
   }
+
+  function togglePicked(slug: string) {
+    setPicked((prev) =>
+      prev.includes(slug)
+        ? prev.filter((s) => s !== slug)
+        : prev.length >= COMPARE_MAX
+          ? prev
+          : [...prev, slug],
+    );
+  }
+
+  // Resolved from all robots, not the filtered rows, so the bar keeps naming a
+  // picked robot that the current filters hide.
+  const pickedRobots = useMemo(
+    () => picked.map((slug) => robots.find((r) => r.slug === slug)).filter((r): r is RobotFull => r != null),
+    [picked, robots],
+  );
+  const atMax = picked.length >= COMPARE_MAX;
+  const compareHref = `/compare?${picked.map((slug, i) => `${"abc"[i]}=${encodeURIComponent(slug)}`).join("&")}`;
 
   const filtersActive = sdk !== "all" || form !== "all" || ceiling !== Infinity || lerobotOnly;
 
@@ -205,6 +228,9 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="text-muted text-left">
+                  <th className="w-7 font-normal py-2">
+                    <span className="sr-only">Compare</span>
+                  </th>
                   <Th onClick={() => toggleSort("name")} active={sortKey === "name"} dir={sortDir} className="w-[30%]">Robot</Th>
                   <Th onClick={() => toggleSort("form")} active={sortKey === "form"} dir={sortDir}>Form</Th>
                   <Th onClick={() => toggleSort("sdk")} active={sortKey === "sdk"} dir={sortDir}>SDK</Th>
@@ -217,7 +243,15 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <Row key={r.id} r={r} open={open === r.id} onToggle={() => setOpen(open === r.id ? null : r.id)} />
+                  <Row
+                    key={r.id}
+                    r={r}
+                    open={open === r.id}
+                    onToggle={() => setOpen(open === r.id ? null : r.id)}
+                    picked={picked.includes(r.slug)}
+                    pickDisabled={atMax && !picked.includes(r.slug)}
+                    onPick={() => togglePicked(r.slug)}
+                  />
                 ))}
               </tbody>
             </table>
@@ -228,8 +262,14 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
             {rows.map((r) => {
               const t = entryTier(r);
               return (
-                <li key={r.id} className="py-3">
-                  <Link href={`/robots/${r.slug}`} className="flex items-center gap-3">
+                <li key={r.id} className="py-3 flex items-center gap-3">
+                  <PickBox
+                    r={r}
+                    picked={picked.includes(r.slug)}
+                    disabled={atMax && !picked.includes(r.slug)}
+                    onPick={() => togglePicked(r.slug)}
+                  />
+                  <Link href={`/robots/${r.slug}`} className="flex items-center gap-3 min-w-0 flex-1">
                     <RobotThumb r={r} size={64} />
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate">{r.name}</div>
@@ -247,11 +287,89 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
           </ul>
         </>
       )}
+
+      {picked.length > 0 && (
+        <div className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-line bg-panel/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+            <span className="text-muted">Compare</span>
+            <ul className="flex flex-wrap items-center gap-2">
+              {pickedRobots.map((r) => (
+                <li key={r.id}>
+                  <button
+                    onClick={() => togglePicked(r.slug)}
+                    className="tap inline-flex items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2.5 py-1 text-xs hover:border-muted"
+                  >
+                    {r.name}
+                    <span aria-hidden className="text-muted">×</span>
+                    <span className="sr-only">Remove from the comparison</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="ml-auto flex items-center gap-4">
+              <span className="text-xs text-muted">
+                {picked.length < 2 ? "Pick one more to compare." : atMax ? "Three is the maximum." : null}
+              </span>
+              {picked.length >= 2 && (
+                <Link href={compareHref} className="tap rounded-md bg-accent px-3 py-1.5 font-medium text-bg">
+                  Compare ({picked.length}) →
+                </Link>
+              )}
+              <button onClick={() => setPicked([])} className="tap text-accent hover:underline">
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Row({ r, open, onToggle }: { r: RobotFull; open: boolean; onToggle: () => void }) {
+/** The compare checkbox. A real input, so Space toggles it and the label reads out. */
+function PickBox({
+  r,
+  picked,
+  disabled,
+  onPick,
+}: {
+  r: RobotFull;
+  picked: boolean;
+  disabled: boolean;
+  onPick: () => void;
+}) {
+  return (
+    <label
+      className={`tap shrink-0 ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+      title={disabled ? `Comparing ${COMPARE_MAX} already. Clear one to swap it out.` : `Compare ${r.name}`}
+    >
+      <input
+        type="checkbox"
+        checked={picked}
+        disabled={disabled}
+        onChange={onPick}
+        className="size-4.5 sm:size-3.5 accent-accent disabled:opacity-40"
+      />
+      <span className="sr-only">Compare {r.name}</span>
+    </label>
+  );
+}
+
+function Row({
+  r,
+  open,
+  onToggle,
+  picked,
+  pickDisabled,
+  onPick,
+}: {
+  r: RobotFull;
+  open: boolean;
+  onToggle: () => void;
+  picked: boolean;
+  pickDisabled: boolean;
+  onPick: () => void;
+}) {
   const entry = entryTier(r);
   const sdkT = sdkTier(r);
   const hero = heroImage(r);
@@ -262,6 +380,11 @@ function Row({ r, open, onToggle }: { r: RobotFull; open: boolean; onToggle: () 
         onClick={onToggle}
         aria-expanded={open}
       >
+        {/* The checkbox is inside a clickable row, so its click stops here
+            instead of also expanding the row. */}
+        <td className="py-2 align-middle" onClick={(e) => e.stopPropagation()}>
+          <PickBox r={r} picked={picked} disabled={pickDisabled} onPick={onPick} />
+        </td>
         <td className="py-2 pr-3">
           <div className="flex items-center gap-3">
             <RobotThumb r={r} size={48} />
@@ -282,7 +405,7 @@ function Row({ r, open, onToggle }: { r: RobotFull; open: boolean; onToggle: () 
         <td className="py-2 pr-3"><ConfidenceMark value={r.confidence} note={r.confidence_note} /></td>
       </tr>
       <tr className="border-0">
-        <td colSpan={8} className="p-0">
+        <td colSpan={9} className="p-0">
           <div className="row-expand" data-open={open}>
             <div>
               <div className="px-3 pb-4 pt-3 grid gap-5 md:grid-cols-[200px_1fr_minmax(240px,300px)] bg-panel border-t border-line/60">
