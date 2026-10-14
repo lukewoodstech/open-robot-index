@@ -22,7 +22,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none">What changed for buyers</h1>
-      <p className="mt-2 text-muted max-w-[60ch]">Price cuts, new SKUs, SDK releases, stock changes and new open-source rigs. Each item links to its robot and the original source. Written in our own words; reviewed before it appears.</p>
+      <p className="mt-2 text-muted max-w-[60ch]">Price cuts, new SKUs, SDK releases, stock changes and new open-source rigs. Each item links to its robot and the original source. Written in our own words; reviewed before it appears. Week by week, it is also in the <Link href="/digest" className="text-accent hover:underline">weekly digest</Link>.</p>
 
       <div className="mt-6 flex flex-wrap gap-1 text-xs border-y border-line py-3">
         <Link href="/news" className={`tap rounded-md border px-3 py-2 sm:px-2.5 sm:py-1 ${!category ? "border-line bg-panel-2 text-text" : "border-transparent text-muted hover:text-text"}`}>All</Link>
