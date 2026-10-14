@@ -42,8 +42,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: inherit;
+/* Links inherit by default so a link inside a sentence takes the sentence's
+   tone. This has to sit in the base layer: unlayered CSS beats every layered
+   rule, so an unlayered `a { color: inherit }` would also beat `.text-accent`
+   and the one interaction accent would never render. */
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 :focus-visible {

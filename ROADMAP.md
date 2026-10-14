@@ -29,18 +29,47 @@ public table, keep every fact sourced and dated.
    drawn by resvg, which cannot decode WebP, so a `.webp` hero needs a `hero.og.jpg`
    sibling. Acceptance: at least ten robots have a gallery; every image has
    attribution shown.
-3. **Weekly digest page.** `/digest/[week]` summarising approved news and applied
-   proposals for the week, written from the data (no LLM at render time). Acceptance:
-   the current week renders; older weeks are linked.
-4. **Playwright smoke tests.** Index loads with 20+ rows, a robot page shows a source
+   > **Blocked for the builder routine (2026-10-14).** Every manufacturer domain cited in
+   > the seed is refused by the sandbox's egress proxy — checked this run: seeedstudio.com,
+   > robotis.us, shop.elephantrobotics.com, ufactory.cc, global.agilex.ai,
+   > store.trossenrobotics.com, shop.deeprobotics.us, waveshare.com, anninrobotics.com,
+   > dobot-robots.com, lite.berkeley-humanoid.org, openarm.dev, norirobotics.com,
+   > mangdang.store, hello-stretch3.com, pollen-robotics.com, clearpathrobotics.com,
+   > xlerobot.readthedocs.io, huggingface.co. No press kit or product page can be opened, and
+   > github.com, the GitHub API and user-attachments are refused too. Only
+   > raw.githubusercontent.com answers, which covers four robots with usable repo photos
+   > (SO-101, Koch v1.1, LeKiwi, OpenArm) and a banner for Stretch 3 — short of the ten the
+   > acceptance asks for, and no reseller photo may stand in. Needs a human: allowlist those
+   > domains for the routine, or lower the bar to the repo-backed four and say so here.
+3. **Playwright smoke tests.** Index loads with 20+ rows, a robot page shows a source
    list, compare renders two robots, corrections form validates. Runs in CI.
-5. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
+4. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
    labels on all selects, `aria-sort` on sortable headers, skip link.
-6. **Company logos.** From official press kits or the repo's own assets only, with
+5. **Company logos.** From official press kits or the repo's own assets only, with
    `logo_source` set. Show on company pages and in the index row's company line.
+6. **Freshness signal.** Every robot still reads `last checked 3 Sept 2026`. Show the age
+   of `last_checked` on the index and the robot page ("checked 6 weeks ago"), and mark a
+   row past 60 days so a stale fact looks stale. Acceptance: the age is on both pages, it
+   is computed from the data, and nothing goes stale silently.
+7. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
+   graphite as the robot cards, naming the week and its counts. Acceptance: a week with
+   content and an empty week both render a card; the site default is unchanged.
+8. **Review-queue health on `/admin/review`.** A header line with the pending count, the
+   age of the oldest pending proposal, and a breakdown by kind, so a backlog is visible
+   on arrival. Read-only: it must not change the auto-approval policy or the queue's
+   buttons. Acceptance: the counts match the table; an empty queue says so.
 
 ## Done
 
+- Weekly digest: `/digest` lists the weeks and `/digest/[week]` renders one, built from
+  the dates already on the rows — approved news published in the week, and every tier,
+  robot and source stamped in it — so nothing is generated at read time. `proposals` has
+  no public read policy, so an applied change is shown through the public stamps it
+  leaves rather than by opening the queue. Empty weeks render, say what to do and are
+  noindex; weeks with content are in the sitemap (#8). Fixed along the way: an unlayered
+  `a { color: inherit }` in `globals.css` was beating every layered utility, so
+  `text-accent` had never rendered on any page and the one interaction accent was
+  invisible site-wide.
 - Phase 1: schema, seed, index table, robot pages, about page, Vercel + Supabase deploy.
 - Phase 2: images with attribution, admin review queue, corrections form, compare,
   company pages, news feed, auto-approval of sourced price updates.
