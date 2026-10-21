@@ -41,25 +41,33 @@ public table, keep every fact sourced and dated.
    > (SO-101, Koch v1.1, LeKiwi, OpenArm) and a banner for Stretch 3 — short of the ten the
    > acceptance asks for, and no reseller photo may stand in. Needs a human: allowlist those
    > domains for the routine, or lower the bar to the repo-backed four and say so here.
-3. **Playwright smoke tests.** Index loads with 20+ rows, a robot page shows a source
-   list, compare renders two robots, corrections form validates. Runs in CI.
-4. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
+3. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
    labels on all selects, `aria-sort` on sortable headers, skip link.
-5. **Company logos.** From official press kits or the repo's own assets only, with
+4. **Company logos.** From official press kits or the repo's own assets only, with
    `logo_source` set. Show on company pages and in the index row's company line.
-6. **Freshness signal.** Every robot still reads `last checked 3 Sept 2026`. Show the age
+5. **Freshness signal.** Every robot still reads `last checked 3 Sept 2026`. Show the age
    of `last_checked` on the index and the robot page ("checked 6 weeks ago"), and mark a
    row past 60 days so a stale fact looks stale. Acceptance: the age is on both pages, it
    is computed from the data, and nothing goes stale silently.
-7. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
+6. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
    graphite as the robot cards, naming the week and its counts. Acceptance: a week with
    content and an empty week both render a card; the site default is unchanged.
-8. **Review-queue health on `/admin/review`.** A header line with the pending count, the
+7. **Review-queue health on `/admin/review`.** A header line with the pending count, the
    age of the oldest pending proposal, and a breakdown by kind, so a backlog is visible
    on arrival. Read-only: it must not change the auto-approval policy or the queue's
    buttons. Acceptance: the counts match the table; an empty queue says so.
 
 ## Done
+
+- Playwright smoke tests in CI: five specs over the four paths that have to work — the
+  index renders a row and an SDK badge per robot and its counter agrees, the SDK chip
+  narrows the table and Clear restores it, a robot page lists its sources with retrieval
+  dates and a correction link, `/compare?a=&b=` renders two columns with the rows every
+  comparison answers, and the corrections form refuses to submit without a robot, a
+  value and a real URL. Nothing is hard-coded: slugs and counts are read off the page,
+  so adding a robot does not break the suite. They run against the production build on
+  the seed fallback, so CI still needs no secrets, and the report uploads on failure.
+  The one new dependency is `@playwright/test` (#9).
 
 - Weekly digest: `/digest` lists the weeks and `/digest/[week]` renders one, built from
   the dates already on the rows — approved news published in the week, and every tier,
