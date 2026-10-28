@@ -6,7 +6,10 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: the latest image rolled to Ubuntu 26.04, which
+    # Playwright 1.56.1 has no browser build for, so `playwright install` fails
+    # before a test runs. Revisit when the pinned Playwright supports it.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

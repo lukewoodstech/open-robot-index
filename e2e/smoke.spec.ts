@@ -10,9 +10,10 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
  * hard-coded — so adding a robot never breaks the suite.
  */
 
-/** The one data row per robot in the desktop table (the expand panel has no aria-expanded). */
+/** The one data row per robot in the desktop table. `data-robot-row` marks it;
+ *  the expand panel that follows each row does not carry the attribute. */
 function indexRows(page: Page): Locator {
-  return page.locator("table tbody tr[aria-expanded]");
+  return page.locator("table tbody tr[data-robot-row]");
 }
 
 /** "Full details and sources →", one per row, carries each robot's slug. */
@@ -55,7 +56,7 @@ test("the SDK filter narrows the table and Clear restores it", async ({ page }) 
 
   // The counter reads "shown of total", and only full-SDK rows survive the chip.
   await expect(counter(page)).toContainText(`${full} of ${all}`);
-  await expect(page.locator('table tbody tr[aria-expanded] [title^="SDK access:"]')).toHaveText(
+  await expect(page.locator('table tbody tr[data-robot-row] [title^="SDK access:"]')).toHaveText(
     Array(full).fill("Full"),
   );
 

@@ -228,17 +228,17 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="text-muted text-left">
-                  <th className="w-7 font-normal py-2">
+                  <th scope="col" className="w-7 font-normal py-2">
                     <span className="sr-only">Compare</span>
                   </th>
                   <Th onClick={() => toggleSort("name")} active={sortKey === "name"} dir={sortDir} className="w-[30%]">Robot</Th>
                   <Th onClick={() => toggleSort("form")} active={sortKey === "form"} dir={sortDir}>Form</Th>
                   <Th onClick={() => toggleSort("sdk")} active={sortKey === "sdk"} dir={sortDir}>SDK</Th>
                   <Th onClick={() => toggleSort("price")} active={sortKey === "price"} dir={sortDir} className="text-right">From</Th>
-                  <th className="font-normal py-2 pr-3 text-right">SDK tier</th>
+                  <th scope="col" className="font-normal py-2 pr-3 text-right">SDK tier</th>
                   <Th onClick={() => toggleSort("lerobot")} active={sortKey === "lerobot"} dir={sortDir}>LeRobot</Th>
-                  <th className="font-normal py-2 pr-3">Languages</th>
-                  <th className="font-normal py-2 pr-3">Confidence</th>
+                  <th scope="col" className="font-normal py-2 pr-3">Languages</th>
+                  <th scope="col" className="font-normal py-2 pr-3">Confidence</th>
                 </tr>
               </thead>
               <tbody>
@@ -373,12 +373,18 @@ function Row({
   const entry = entryTier(r);
   const sdkT = sdkTier(r);
   const hero = heroImage(r);
+  // Built from the slug, not the id: ids are `robot:<slug>` on the seed
+  // fallback, and a colon cannot appear in a CSS id selector.
+  const panelId = `row-panel-${r.slug}`;
   return (
     <>
+      {/* The row stays clickable for the pointer, but a <tr> cannot take focus,
+          so the keyboard path is the button on the name. aria-expanded lives
+          there, on the thing that is actually operable. */}
       <tr
+        data-robot-row
         className={`border-t border-line cursor-pointer hover:bg-panel ${open ? "bg-panel" : ""}`}
         onClick={onToggle}
-        aria-expanded={open}
       >
         {/* The checkbox is inside a clickable row, so its click stops here
             instead of also expanding the row. */}
@@ -389,7 +395,18 @@ function Row({
           <div className="flex items-center gap-3">
             <RobotThumb r={r} size={48} />
             <div className="min-w-0">
-              <div className="font-medium truncate">{r.name}</div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+                aria-expanded={open}
+                aria-controls={panelId}
+                className="block max-w-full truncate text-left font-medium hover:text-accent"
+              >
+                {r.name}
+              </button>
               <div className="text-xs text-muted truncate">{r.company.name}</div>
             </div>
           </div>
@@ -407,7 +424,10 @@ function Row({
       <tr className="border-0">
         <td colSpan={9} className="p-0">
           <div className="row-expand" data-open={open}>
-            <div>
+            {/* Collapsed, this panel is still in the DOM so its height can
+                animate. Without `inert` its "Full details" link stayed in the
+                tab order, putting one invisible stop behind every row. */}
+            <div id={panelId} inert={!open}>
               <div className="px-3 pb-4 pt-3 grid gap-5 md:grid-cols-[200px_1fr_minmax(240px,300px)] bg-panel border-t border-line/60">
                 <div className="relative aspect-[4/3] rounded-md overflow-hidden bg-panel-2 border border-line">
                   {hero ? (
@@ -480,13 +500,18 @@ function Th({
 }) {
   return (
     <th
+      scope="col"
       className={`font-normal py-2 pr-3 ${className}`}
       aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : undefined}
     >
       <button
+        type="button"
         onClick={onClick}
         className={`inline-flex items-center gap-1 hover:text-text ${active ? "text-text" : ""}`}
       >
+        {/* aria-sort on the header says which way it is sorted; the button has
+            to say what pressing it does, which the bare column name does not. */}
+        <span className="sr-only">Sort by </span>
         {children}
         {active && <span aria-hidden className="text-[10px]">{dir === "asc" ? "▲" : "▼"}</span>}
       </button>
@@ -538,7 +563,7 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="tap rounded-md border border-line bg-panel px-2 py-2 sm:py-1 text-xs text-text"
+        className="tap rounded-md border border-line-control bg-panel px-2 py-2 sm:py-1 text-xs text-text"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
