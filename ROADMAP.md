@@ -88,7 +88,7 @@ public table, keep every fact sourced and dated.
   on a panel), so the palette is unchanged — but form controls were bounded only by
   `--line` at 1.2:1, failing WCAG 1.4.11, so inputs, selects and textareas now use a
   new `--line-control` at 3.2–3.7:1. Seven Playwright specs lock all of it in,
-  including contrast computed from the tokens the browser resolves (#PR).
+  including contrast computed from the tokens the browser resolves (#10).
 
 - Playwright smoke tests in CI: five specs over the four paths that have to work — the
   index renders a row and an SDK badge per robot and its counter agrees, the SDK chip
