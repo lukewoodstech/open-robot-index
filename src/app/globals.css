@@ -6,6 +6,12 @@
   --panel: #171b21;
   --panel-2: #1d222a;
   --line: #262c35;
+  /* The quiet --line reads 1.2:1 on a panel, which is fine for a decorative
+     table divider but not for the edge of a control: WCAG 1.4.11 wants 3:1 for
+     the boundary that identifies a form field. This is the same cool grey,
+     lifted until it passes (3.7:1 on bg, 3.4:1 on panel, 3.2:1 on panel-2),
+     and it is used only on inputs, selects and textareas. */
+  --line-control: #676f7d;
   --text: #edeff2;
   --muted: #8b93a1;
   --accent: #5b8def;
@@ -19,6 +25,7 @@
   --color-panel: var(--panel);
   --color-panel-2: var(--panel-2);
   --color-line: var(--line);
+  --color-line-control: var(--line-control);
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -58,6 +65,31 @@ body {
   border-radius: 4px;
 }
 
+/* Skip link: the first focusable thing on every page, off-screen until it takes
+   focus, so a keyboard user reaches the table without walking the nav. It is
+   not `sr-only`, because it has to become visible when focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 50;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  background: var(--panel-2);
+  border: 1px solid var(--line-control);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* The skip link lands on <main>, which is focused programmatically. It should
+   not then draw a focus ring around the whole page. */
+main:focus {
+  outline: none;
+}
+
 /* Touch targets. Below the sm breakpoint a standalone control is at least 40px
    tall; on desktop the pointer is precise and the design stays dense. Inline
    links inside a sentence keep their natural size (WCAG 2.5.8 exempts them). */
@@ -82,6 +114,8 @@ body {
 .row-expand[data-open="true"] {
   grid-template-rows: 1fr;
 }
+/* The panel stays in the DOM at 0fr so its height can animate; this clips it.
+   What keeps its link out of the tab order is `inert` on the same element. */
 .row-expand > div {
   overflow: hidden;
 }

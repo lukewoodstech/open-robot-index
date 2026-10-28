@@ -58,7 +58,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Comp
         {(["a", "b", "c"] as const).map((k, i) => (
           <label key={k} className="block w-full sm:w-auto">
             <span className="text-muted">Robot {i + 1}{i === 2 ? " (optional)" : ""}</span>
-            <select name={k} defaultValue={[a, b, c][i] ?? ""} className="tap mt-1 block w-full rounded-md border border-line bg-panel px-2 py-1.5 sm:w-auto sm:min-w-[200px]">
+            <select name={k} defaultValue={[a, b, c][i] ?? ""} className="tap mt-1 block w-full rounded-md border border-line-control bg-panel px-2 py-1.5 sm:w-auto sm:min-w-[200px]">
               <option value="">—</option>
               {all.map((r) => <option key={r.slug} value={r.slug}>{r.name}</option>)}
             </select>
@@ -74,9 +74,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Comp
           <table className="w-full text-sm border-collapse min-w-[640px]">
             <thead>
               <tr>
-                <th className="w-40" />
+                {/* The stub corner of a comparison table. It names the column
+                    of row headers rather than being an unlabelled cell. */}
+                <th scope="col" className="w-40">
+                  <span className="sr-only">Field</span>
+                </th>
                 {picked.map((r) => (
-                  <th key={r.id} className="text-left font-normal pb-3 pr-4 align-bottom">
+                  <th key={r.id} scope="col" className="text-left font-normal pb-3 pr-4 align-bottom">
                     <RobotThumb r={r} size={0} className="!w-full aspect-[4/3] mb-2" sizes="33vw" />
                     <Link href={`/robots/${r.slug}`} className="tap font-medium text-base hover:underline">{r.name}</Link>
                     <div className="text-xs text-muted">{r.company.name}</div>

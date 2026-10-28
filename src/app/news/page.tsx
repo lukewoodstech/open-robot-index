@@ -25,9 +25,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <p className="mt-2 text-muted max-w-[60ch]">Price cuts, new SKUs, SDK releases, stock changes and new open-source rigs. Each item links to its robot and the original source. Written in our own words; reviewed before it appears. Week by week, it is also in the <Link href="/digest" className="text-accent hover:underline">weekly digest</Link>.</p>
 
       <div className="mt-6 flex flex-wrap gap-1 text-xs border-y border-line py-3">
-        <Link href="/news" className={`tap rounded-md border px-3 py-2 sm:px-2.5 sm:py-1 ${!category ? "border-line bg-panel-2 text-text" : "border-transparent text-muted hover:text-text"}`}>All</Link>
+        <Link href="/news" aria-current={!category ? "page" : undefined} className={`tap rounded-md border px-3 py-2 sm:px-2.5 sm:py-1 ${!category ? "border-line bg-panel-2 text-text" : "border-transparent text-muted hover:text-text"}`}>All</Link>
         {CATEGORIES.map((c) => (
-          <Link key={c} href={`/news?category=${c}`} className={`tap rounded-md border px-3 py-2 sm:px-2.5 sm:py-1 ${category === c ? "border-line bg-panel-2 text-text" : "border-transparent text-muted hover:text-text"}`}>
+          <Link key={c} href={`/news?category=${c}`} aria-current={category === c ? "page" : undefined} className={`tap rounded-md border px-3 py-2 sm:px-2.5 sm:py-1 ${category === c ? "border-line bg-panel-2 text-text" : "border-transparent text-muted hover:text-text"}`}>
             {c.replace("_", " ")}
           </Link>
         ))}

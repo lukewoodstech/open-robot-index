@@ -41,6 +41,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={geist.variable}>
       <body className="min-h-screen flex flex-col">
+        {/* First focusable element on the page: skip the nav and land on the
+            table. Off-screen until focused, see .skip-link in globals.css. */}
+        <a href="#main" className="skip-link">
+          Skip to main content
+        </a>
         <header className="border-b border-line">
           <nav className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center gap-4 sm:gap-6 text-sm">
             <Link
@@ -66,7 +71,9 @@ export default function RootLayout({
             </Link>
           </nav>
         </header>
-        <main className="flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-8">
+        {/* tabIndex -1 so the skip link can move focus here, not just scroll:
+            without it the next Tab would start from the top of the nav again. */}
+        <main id="main" tabIndex={-1} className="flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-8">
           {children}
         </main>
         <footer className="border-t border-line">

@@ -41,23 +41,54 @@ public table, keep every fact sourced and dated.
    > (SO-101, Koch v1.1, LeKiwi, OpenArm) and a banner for Stretch 3 — short of the ten the
    > acceptance asks for, and no reseller photo may stand in. Needs a human: allowlist those
    > domains for the routine, or lower the bar to the repo-backed four and say so here.
-3. **Accessibility pass.** Focus order, contrast of muted text on panel (aim for 4.5:1),
-   labels on all selects, `aria-sort` on sortable headers, skip link.
-4. **Company logos.** From official press kits or the repo's own assets only, with
+3. **Company logos.** From official press kits or the repo's own assets only, with
    `logo_source` set. Show on company pages and in the index row's company line.
-5. **Freshness signal.** Every robot still reads `last checked 3 Sept 2026`. Show the age
+4. **Freshness signal.** Every robot still reads `last checked 3 Sept 2026`. Show the age
    of `last_checked` on the index and the robot page ("checked 6 weeks ago"), and mark a
    row past 60 days so a stale fact looks stale. Acceptance: the age is on both pages, it
    is computed from the data, and nothing goes stale silently.
-6. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
+5. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
    graphite as the robot cards, naming the week and its counts. Acceptance: a week with
    content and an empty week both render a card; the site default is unchanged.
-7. **Review-queue health on `/admin/review`.** A header line with the pending count, the
+6. **Review-queue health on `/admin/review`.** A header line with the pending count, the
    age of the oldest pending proposal, and a breakdown by kind, so a backlog is visible
    on arrival. Read-only: it must not change the auto-approval policy or the queue's
    buttons. Acceptance: the counts match the table; an empty queue says so.
+7. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
+   select rewrites the table silently: the "N of M" counter updates but nothing is
+   announced, so a screen-reader user cannot tell a filter did anything. Put the
+   counter in an `aria-live="polite"` region and give the "No robots match" state a
+   role so it is announced too. Acceptance: a Playwright test asserts the live
+   region's text changes after a chip is clicked, and that nothing is announced on
+   first paint.
+8. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
+   it only repaints a border — `document.activeElement` never moves, so a keyboard
+   or screen-reader user cannot tell which proposal A/R will act on. Make the
+   selected card actually take focus, keep the accent border, and label it so the
+   move is announced. Acceptance: J/K moves `document.activeElement` to the
+   selected card, A/R still act on it, and Tab from a card reaches its own
+   Approve/Reject before the next card's.
+9. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
+   the bad slug and falls through to "Pick at least two robots", which blames the
+   reader for a bad link. Name the slug that did not resolve and offer the picker.
+   Acceptance: an unknown slug renders a message naming it; a valid pair is
+   unaffected; the canonical still collapses argument order.
 
 ## Done
+
+- Accessibility pass: the index table could not be expanded without a mouse — the
+  row was a `<tr>` with an `onClick`, which cannot take focus — so the robot name
+  is now a real button carrying `aria-expanded`/`aria-controls`, and the row stays
+  clickable for the pointer. Collapsed panels are `inert`, which removes the
+  invisible "Full details" tab stop each of the 23 rows had been leaving in the tab
+  order. A skip link is the first focusable element on every page and moves focus
+  to `<main>`, not just the scroll position. Sort buttons say "Sort by <column>"
+  rather than repeating the heading, and `scope="col"` is on every header.
+  Measured rather than eyeballed: all text already cleared 4.5:1 (muted is 5.58:1
+  on a panel), so the palette is unchanged — but form controls were bounded only by
+  `--line` at 1.2:1, failing WCAG 1.4.11, so inputs, selects and textareas now use a
+  new `--line-control` at 3.2–3.7:1. Seven Playwright specs lock all of it in,
+  including contrast computed from the tokens the browser resolves (#PR).
 
 - Playwright smoke tests in CI: five specs over the four paths that have to work — the
   index renders a row and an SDK badge per robot and its counter agrees, the SDK chip

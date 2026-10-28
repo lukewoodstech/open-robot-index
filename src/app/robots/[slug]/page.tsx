@@ -157,12 +157,12 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
           <table className="w-full text-sm">
             <thead className="text-muted text-left">
               <tr className="border-b border-line">
-                <th className="font-normal py-2 pr-3">Tier</th>
-                <th className="font-normal py-2 pr-3 text-right">USD</th>
-                <th className="font-normal py-2 pr-3">SDK</th>
-                <th className="font-normal py-2 pr-3">Compute</th>
-                <th className="font-normal py-2 pr-3">Note</th>
-                <th className="font-normal py-2 text-right">Checked</th>
+                <th scope="col" className="font-normal py-2 pr-3">Tier</th>
+                <th scope="col" className="font-normal py-2 pr-3 text-right">USD</th>
+                <th scope="col" className="font-normal py-2 pr-3">SDK</th>
+                <th scope="col" className="font-normal py-2 pr-3">Compute</th>
+                <th scope="col" className="font-normal py-2 pr-3">Note</th>
+                <th scope="col" className="font-normal py-2 text-right">Checked</th>
               </tr>
             </thead>
             <tbody>
@@ -244,7 +244,9 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
             {gallery.map((img) => (
               <li key={img.id} className="text-xs text-muted">
                 <div className="relative rounded-md border border-line aspect-[4/3] overflow-hidden bg-panel">
-                  <Image src={img.url} alt="" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+                    {/* A gallery photo is content, not decoration: the caption
+                      below credits the source, it does not describe the image. */}
+                  <Image src={img.url} alt={`${r.name} (${img.attribution})`} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
                 </div>
                 <div className="mt-1">
                   {img.attribution} ·{" "}
