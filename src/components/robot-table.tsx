@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ConfidenceMark, SdkBadge } from "@/components/badges";
+import { ConfidenceMark, FreshnessMark, SdkBadge } from "@/components/badges";
 import { RobotThumb } from "@/components/robot-thumb";
-import { isoDate, usd } from "@/lib/format";
+import { freshness, isoDate, usd } from "@/lib/format";
 import {
   FORM_LABELS,
   LEROBOT_LABELS,
@@ -17,7 +17,7 @@ import {
   type SdkAccess,
 } from "@/lib/types";
 
-type SortKey = "name" | "price" | "sdk" | "form" | "lerobot" | "company";
+type SortKey = "name" | "price" | "sdk" | "form" | "lerobot" | "company" | "checked";
 type SortDir = "asc" | "desc";
 
 const PRICE_CEILINGS = [
@@ -35,7 +35,7 @@ const LEROBOT_ORDER = { native: 0, supported: 1, compatible: 2, community: 3, no
 /** /compare takes a, b and c, so the picker stops at three. */
 const COMPARE_MAX = 3;
 
-export function RobotTable({ robots }: { robots: RobotFull[] }) {
+export function RobotTable({ robots, today }: { robots: RobotFull[]; today: string }) {
   const [sdk, setSdk] = useState<SdkAccess | "all">("all");
   const [form, setForm] = useState<RobotForm | "all">("all");
   const [ceiling, setCeiling] = useState<number>(Infinity);
@@ -84,6 +84,11 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
           break;
         case "lerobot":
           v = LEROBOT_ORDER[a.lerobot_support] - LEROBOT_ORDER[b.lerobot_support];
+          break;
+        // ISO dates sort lexicographically, so ascending puts the oldest check
+        // first: one click on the column surfaces everything that is due.
+        case "checked":
+          v = a.last_checked.localeCompare(b.last_checked);
           break;
         case "price": {
           const pa = entryTier(a)?.price_usd ?? Number.POSITIVE_INFINITY;
@@ -239,6 +244,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
                   <Th onClick={() => toggleSort("lerobot")} active={sortKey === "lerobot"} dir={sortDir}>LeRobot</Th>
                   <th scope="col" className="font-normal py-2 pr-3">Languages</th>
                   <th scope="col" className="font-normal py-2 pr-3">Confidence</th>
+                  <Th onClick={() => toggleSort("checked")} active={sortKey === "checked"} dir={sortDir}>Checked</Th>
                 </tr>
               </thead>
               <tbody>
@@ -246,6 +252,7 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
                   <Row
                     key={r.id}
                     r={r}
+                    today={today}
                     open={open === r.id}
                     onToggle={() => setOpen(open === r.id ? null : r.id)}
                     picked={picked.includes(r.slug)}
@@ -274,9 +281,10 @@ export function RobotTable({ robots }: { robots: RobotFull[] }) {
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate">{r.name}</div>
                       <div className="text-xs text-muted truncate">{r.company.name} · {FORM_LABELS[r.form]}</div>
-                      <div className="mt-1.5 flex items-center gap-2">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
                         <SdkBadge value={r.sdk_access} />
                         <ConfidenceMark value={r.confidence} note={r.confidence_note} />
+                        <FreshnessMark checked={r.last_checked} today={today} prefix="checked " />
                       </div>
                     </div>
                     <div className="tabular-nums text-right shrink-0">{usd(t?.price_usd)}</div>
@@ -357,6 +365,7 @@ function PickBox({
 
 function Row({
   r,
+  today,
   open,
   onToggle,
   picked,
@@ -364,6 +373,7 @@ function Row({
   onPick,
 }: {
   r: RobotFull;
+  today: string;
   open: boolean;
   onToggle: () => void;
   picked: boolean;
@@ -376,6 +386,7 @@ function Row({
   // Built from the slug, not the id: ids are `robot:<slug>` on the seed
   // fallback, and a colon cannot appear in a CSS id selector.
   const panelId = `row-panel-${r.slug}`;
+  const fresh = freshness(r.last_checked, today);
   return (
     <>
       {/* The row stays clickable for the pointer, but a <tr> cannot take focus,
@@ -383,6 +394,8 @@ function Row({
           there, on the thing that is actually operable. */}
       <tr
         data-robot-row
+        data-checked={r.last_checked}
+        data-stale={fresh.stale}
         className={`border-t border-line cursor-pointer hover:bg-panel ${open ? "bg-panel" : ""}`}
         onClick={onToggle}
       >
@@ -420,9 +433,10 @@ function Row({
         <td className="py-2 pr-3 text-muted">{LEROBOT_LABELS[r.lerobot_support]}</td>
         <td className="py-2 pr-3 text-muted">{r.languages.join(", ")}</td>
         <td className="py-2 pr-3"><ConfidenceMark value={r.confidence} note={r.confidence_note} /></td>
+        <td className="py-2 pr-3"><FreshnessMark checked={r.last_checked} today={today} /></td>
       </tr>
       <tr className="border-0">
-        <td colSpan={9} className="p-0">
+        <td colSpan={10} className="p-0">
           <div className="row-expand" data-open={open}>
             {/* Collapsed, this panel is still in the DOM so its height can
                 animate. Without `inert` its "Full details" link stayed in the
@@ -451,7 +465,7 @@ function Row({
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
                     <span>Open hardware: <span className="text-text">{r.open_hardware}</span></span>
                     <span>Availability: <span className="text-text">{r.availability ?? "—"}</span></span>
-                    <span>Checked {isoDate(r.last_checked)}</span>
+                    <span>Checked {isoDate(r.last_checked)} · {fresh.age}</span>
                   </div>
                 </div>
                 <div className="text-sm">

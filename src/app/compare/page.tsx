@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ConfidenceMark, SdkBadge } from "@/components/badges";
 import { RobotThumb } from "@/components/robot-thumb";
 import { getRobots } from "@/lib/data";
-import { isoDate, num, usd } from "@/lib/format";
+import { freshness, isoDate, num, todayIso, usd } from "@/lib/format";
 import { CONFIDENCE_LABELS, FORM_LABELS, LEROBOT_LABELS, entryTier, sdkTier, type RobotFull } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -105,7 +105,11 @@ export default async function ComparePage({ searchParams }: { searchParams: Comp
               <Row label="Weight" cells={picked.map((r) => num(r.weight_kg, " kg"))} />
               <Row label="Confidence" cells={picked.map((r) => <ConfidenceMark key={r.id} value={r.confidence} note={r.confidence_note} />)} />
               <Row label="Confidence note" cells={picked.map((r) => r.confidence_note ?? CONFIDENCE_LABELS[r.confidence])} muted />
-              <Row label="Last checked" cells={picked.map((r) => isoDate(r.last_checked))} muted />
+              <Row
+                label="Last checked"
+                cells={picked.map((r) => `${isoDate(r.last_checked)} · ${freshness(r.last_checked, todayIso()).age}`)}
+                muted
+              />
             </tbody>
           </table>
         </div>
