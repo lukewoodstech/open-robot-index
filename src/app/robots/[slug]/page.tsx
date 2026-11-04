@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ConfidenceMark, SdkBadge } from "@/components/badges";
+import { ConfidenceMark, FreshnessMark, SdkBadge } from "@/components/badges";
 import { RobotThumb } from "@/components/robot-thumb";
 import { getNews, getRobot, getRobotSlugs, getRobots } from "@/lib/data";
-import { isoDate, num, usd } from "@/lib/format";
+import { STALE_AFTER_DAYS, freshness, isoDate, num, todayIso, usd } from "@/lib/format";
 import {
   CONFIDENCE_LABELS,
   FORM_LABELS,
@@ -56,6 +56,9 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
     .slice(0, 4);
   const sdkT = sdkTier(r);
   const borderTone = { full: "border-sdk-full/50", gated: "border-sdk-gated/50", none: "border-sdk-none/50" }[r.sdk_access];
+
+  const today = todayIso();
+  const fresh = freshness(r.last_checked, today);
 
   return (
     <article>
@@ -127,7 +130,7 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
           </dl>
           <div className="mt-4 pt-3 border-t border-line flex items-center justify-between text-xs text-muted">
             <ConfidenceMark value={r.confidence} note={r.confidence_note} />
-            <span>Checked {isoDate(r.last_checked)}</span>
+            <FreshnessMark checked={r.last_checked} today={today} prefix={`${isoDate(r.last_checked)} · `} />
           </div>
         </aside>
       </div>
@@ -136,6 +139,25 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
         <p className="mt-2 text-xs text-muted">
           Image: {hero.attribution} ·{" "}
           <a href={hero.source_url} target="_blank" rel="noopener" className="hover:text-text underline">source</a>
+        </p>
+      )}
+
+      {/* The date alone does not tell a reader whether to trust it. Past the
+          window the page says so in words rather than leaving it to be worked
+          out from the date. */}
+      {fresh.stale && (
+        <p className="mt-3 max-w-[70ch] rounded-md border border-muted bg-panel px-4 py-3 text-sm">
+          These facts were last checked {fresh.age}, on {isoDate(r.last_checked)} — more than {STALE_AFTER_DAYS} days.
+          Treat the price and availability as a starting point and check the{" "}
+          {r.company.website ? (
+            <a href={r.company.website} target="_blank" rel="noopener" className="text-accent hover:underline">
+              manufacturer&rsquo;s own page
+            </a>
+          ) : (
+            "sources below"
+          )}{" "}
+          before buying. If something has moved,{" "}
+          <Link href={`/corrections?robot=${r.slug}`} className="text-accent hover:underline">report a correction</Link>.
         </p>
       )}
 
@@ -178,7 +200,10 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
                   </td>
                   <td className="py-2 pr-3 text-muted">{t.compute ?? "—"}</td>
                   <td className="py-2 pr-3 text-muted max-w-[40ch]">{t.price_note ?? "—"}</td>
-                  <td className="py-2 text-right text-muted whitespace-nowrap">{isoDate(t.checked_at)}</td>
+                  <td className="py-2 text-right whitespace-nowrap">
+                    <div className="text-muted">{isoDate(t.checked_at)}</div>
+                    <FreshnessMark checked={t.checked_at} today={today} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -199,7 +224,7 @@ export default async function RobotPage({ params }: { params: Promise<{ slug: st
                   {t.includes_sdk ? <span className="text-sdk-full">Included</span> : <span>No</span>}
                 </span>
                 {t.compute && <span>Compute: {t.compute}</span>}
-                <span>Checked {isoDate(t.checked_at)}</span>
+                <span>Checked {isoDate(t.checked_at)} · {freshness(t.checked_at, today).age}</span>
               </div>
               {t.price_note && <p className="mt-1 text-xs text-muted">{t.price_note}</p>}
             </li>

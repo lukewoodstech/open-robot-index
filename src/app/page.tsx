@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { RobotTable } from "@/components/robot-table";
 import { getRobots } from "@/lib/data";
-import { isoDate, usd } from "@/lib/format";
+import { STALE_AFTER_DAYS, freshness, isoDate, todayIso, usd } from "@/lib/format";
 import { entryTier } from "@/lib/types";
 
 // Canonical is set per page rather than in the root layout: inherited from the
@@ -15,7 +15,13 @@ export default async function IndexPage() {
   const open = robots.filter((r) => r.open_hardware === "yes").length;
   const prices = robots.map((r) => entryTier(r)?.price_usd).filter((p): p is number => p != null);
   const cheapest = prices.length ? Math.min(...prices) : null;
-  const latest = robots.map((r) => r.last_checked).sort().at(-1);
+  const checkedDates = robots.map((r) => r.last_checked).sort();
+  const latest = checkedDates.at(-1);
+  const oldest = checkedDates.at(0);
+  // Computed on the server and handed to the table, so the client never
+  // derives an age from a clock the server did not use.
+  const today = todayIso();
+  const due = robots.filter((r) => freshness(r.last_checked, today).stale).length;
 
   return (
     <div>
@@ -35,10 +41,30 @@ export default async function IndexPage() {
           <Stat label="Cheapest" value={usd(cheapest)} />
         </dl>
       </div>
-      <RobotTable robots={robots} />
-      {latest && (
+      <RobotTable robots={robots} today={today} />
+      {latest && oldest && (
         <p className="mt-6 text-xs text-muted">
-          Prices in USD as shown on the cited page. Last checked {isoDate(latest)}. Hover a confidence mark to see what is contested.
+          Prices in USD as shown on the cited page.{" "}
+          {/* One date for the whole table reads as a spread of two identical
+              dates unless it is collapsed. */}
+          {latest === oldest ? (
+            <>Every row checked {freshness(latest, today).age}, on {isoDate(latest)}.</>
+          ) : (
+            <>
+              Newest check {freshness(latest, today).age} ({isoDate(latest)}), oldest{" "}
+              {freshness(oldest, today).age} ({isoDate(oldest)}).
+            </>
+          )}{" "}
+          Hover a confidence mark to see what is contested.
+        </p>
+      )}
+      {/* A date on its own lets a fact age quietly. This says out loud how much
+          of the table is overdue, so the backlog is visible without reading
+          23 rows. */}
+      {due > 0 && (
+        <p className="mt-1 text-xs">
+          Due a re-check: {due} of {robots.length} {due === 1 ? "robot has" : "robots have"} gone more than{" "}
+          {STALE_AFTER_DAYS} days without one. Sort by Checked to see the oldest first.
         </p>
       )}
     </div>

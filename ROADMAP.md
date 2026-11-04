@@ -43,38 +43,55 @@ public table, keep every fact sourced and dated.
    > domains for the routine, or lower the bar to the repo-backed four and say so here.
 3. **Company logos.** From official press kits or the repo's own assets only, with
    `logo_source` set. Show on company pages and in the index row's company line.
-4. **Freshness signal.** Every robot still reads `last checked 3 Sept 2026`. Show the age
-   of `last_checked` on the index and the robot page ("checked 6 weeks ago"), and mark a
-   row past 60 days so a stale fact looks stale. Acceptance: the age is on both pages, it
-   is computed from the data, and nothing goes stale silently.
-5. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
+   > **Blocked for the builder routine (2026-11-04).** Same egress wall as item 2,
+   > re-checked this run: seeedstudio.com, robotis.us, ufactory.cc, trossenrobotics.com,
+   > pollen-robotics.com and huggingface.co all refused by the sandbox proxy, and
+   > github.com answers only 400. Only raw.githubusercontent.com resolves, which reaches
+   > the handful of open-source projects' repos and none of the 22 companies' press kits.
+   > A logo lifted from anywhere else would breach the images non-negotiable. Needs a
+   > human: allowlist those domains for the routine, or drop in the logo files by hand
+   > with their `logo_source`.
+4. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
    graphite as the robot cards, naming the week and its counts. Acceptance: a week with
    content and an empty week both render a card; the site default is unchanged.
-6. **Review-queue health on `/admin/review`.** A header line with the pending count, the
+5. **Review-queue health on `/admin/review`.** A header line with the pending count, the
    age of the oldest pending proposal, and a breakdown by kind, so a backlog is visible
    on arrival. Read-only: it must not change the auto-approval policy or the queue's
    buttons. Acceptance: the counts match the table; an empty queue says so.
-7. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
+6. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
    select rewrites the table silently: the "N of M" counter updates but nothing is
    announced, so a screen-reader user cannot tell a filter did anything. Put the
    counter in an `aria-live="polite"` region and give the "No robots match" state a
    role so it is announced too. Acceptance: a Playwright test asserts the live
    region's text changes after a chip is clicked, and that nothing is announced on
    first paint.
-8. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
+7. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
    it only repaints a border — `document.activeElement` never moves, so a keyboard
    or screen-reader user cannot tell which proposal A/R will act on. Make the
    selected card actually take focus, keep the accent border, and label it so the
    move is announced. Acceptance: J/K moves `document.activeElement` to the
    selected card, A/R still act on it, and Tab from a card reaches its own
    Approve/Reject before the next card's.
-9. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
+8. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
    the bad slug and falls through to "Pick at least two robots", which blames the
    reader for a bad link. Name the slug that did not resolve and offer the picker.
    Acceptance: an unknown slug renders a message naming it; a valid pair is
    unaffected; the canonical still collapses argument order.
 
 ## Done
+
+- Freshness signal: every row and every robot page now says how old its facts are, not
+  just when they were checked. A new `freshness()` in `src/lib/format.ts` turns a
+  `last_checked` date into an age ("9 weeks ago") and a stale flag at 60 days, and the
+  index grew a sortable Checked column so one click surfaces the oldest first. Past the
+  window a row's mark becomes bordered and full-contrast instead of quiet muted text —
+  no new colour, since colour here only ever means SDK state — and the robot page spells
+  the overdue case out in words with a link to the manufacturer and to the corrections
+  form. Nothing goes stale silently: the index footer states how many of the rows are
+  due. The age is computed on the server and passed into the client table, because a
+  component reading its own clock would disagree with the hourly-revalidated HTML it
+  hydrates. Four Playwright specs lock it in from each row's own `data-checked`, so a
+  re-check that moves the dates does not break the suite (#11).
 
 - Accessibility pass: the index table could not be expanded without a mouse — the
   row was a `<tr>` with an `onClick`, which cannot take focus — so the robot name
