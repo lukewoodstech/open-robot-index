@@ -23,8 +23,18 @@ jobs:
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+      # The browser only, no apt. On this image `--with-deps` installs nothing
+      # but font packages — fonts-ipafont-gothic, fonts-wqy-zenhei, xfonts-* —
+      # because every shared library Chromium needs (libxcb1, libxcomposite1,
+      # libxkbcommon0, libfontconfig1, fonts-liberation) is already on
+      # ubuntu-24.04 and apt reports it as such. Those fonts cover CJK,
+      # Cyrillic and Thai, which this site never renders: the pages are Latin
+      # in Geist, and the OG cards are drawn by resvg from TTFs in the repo,
+      # using no system font at all. Fetching them put the whole suite behind
+      # the runner's apt mirror, which failed to resolve on two runs twenty
+      # minutes apart on 2026-11-11 and took the build down with it.
+      - run: npx playwright install chromium
       # Smoke tests drive the build above, still on the seed fallback.
-      - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
         env:
           NEXT_TELEMETRY_DISABLED: "1"
