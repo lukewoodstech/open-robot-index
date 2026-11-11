@@ -51,34 +51,66 @@ public table, keep every fact sourced and dated.
    > A logo lifted from anywhere else would breach the images non-negotiable. Needs a
    > human: allowlist those domains for the routine, or drop in the logo files by hand
    > with their `logo_source`.
-4. **OG cards for digest weeks.** `/digest/[week]/opengraph-image` in the same Geist on
-   graphite as the robot cards, naming the week and its counts. Acceptance: a week with
-   content and an empty week both render a card; the site default is unchanged.
-5. **Review-queue health on `/admin/review`.** A header line with the pending count, the
+4. **Review-queue health on `/admin/review`.** A header line with the pending count, the
    age of the oldest pending proposal, and a breakdown by kind, so a backlog is visible
    on arrival. Read-only: it must not change the auto-approval policy or the queue's
    buttons. Acceptance: the counts match the table; an empty queue says so.
-6. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
+5. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
    select rewrites the table silently: the "N of M" counter updates but nothing is
    announced, so a screen-reader user cannot tell a filter did anything. Put the
    counter in an `aria-live="polite"` region and give the "No robots match" state a
    role so it is announced too. Acceptance: a Playwright test asserts the live
    region's text changes after a chip is clicked, and that nothing is announced on
    first paint.
-7. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
+6. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
    it only repaints a border — `document.activeElement` never moves, so a keyboard
    or screen-reader user cannot tell which proposal A/R will act on. Make the
    selected card actually take focus, keep the accent border, and label it so the
    move is announced. Acceptance: J/K moves `document.activeElement` to the
    selected card, A/R still act on it, and Tab from a card reaches its own
    Approve/Reject before the next card's.
-8. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
+7. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
    the bad slug and falls through to "Pick at least two robots", which blames the
    reader for a bad link. Name the slug that did not resolve and offer the picker.
    Acceptance: an unknown slug renders a message naming it; a valid pair is
    unaffected; the canonical still collapses argument order.
 
+8. **OG cards for company pages.** `/companies/[slug]` unfurls as the generic site card,
+   so a link to a maker says nothing about what they sell. Draw a card in the same Geist
+   on graphite: the company name, how many robots of theirs are in the index, their SDK
+   mix in the three state colours, and the cheapest entry price across them. Acceptance:
+   every company prerenders a 1200x630 PNG; a one-robot company and a many-robot company
+   both render; the site default is unchanged.
+
+9. **An OG card for a comparison.** `/compare?a=&b=` is the page most likely to be pasted
+   into a chat, and today it unfurls as the generic site card, so the link does not say
+   which robots are being compared. Note before starting: a file-based `opengraph-image`
+   is handed `params` only, never `searchParams`, so this needs a route handler that takes
+   the slugs in its own path or query and `openGraph.images` set from `generateMetadata`.
+   Acceptance: two and three robots each render a card naming them with their SDK state
+   and entry price; no slugs or only bad slugs falls back to the site card; swapping
+   argument order produces the same image URL, as the canonical already does.
+
+10. **Age the facts on company pages.** The freshness pass reached the index and the robot
+   pages, but `/companies/[slug]` still lists its robots with a bare date, so a maker whose
+   whole range is four months stale reads exactly like one checked last week. Carry the
+   same `freshness()` age and stale mark onto each row there, and say in the page's
+   summary line how many of that company's robots are due. Acceptance: every row exposes
+   its own `data-checked` and renders an age in words; a Playwright spec derives the
+   expected stale marks from those dates rather than hard-coding a company.
+
 ## Done
+- OG cards for digest weeks: `/digest/[week]/opengraph-image` draws a card per week in the
+  same Geist on graphite as the robot cards — the week in words, its date range and ISO id,
+  and three counts read straight off the digest (buyer changes, robots re-checked, tier
+  prices checked). An empty week unfurls too, saying in the card what the page says: nothing
+  cleared the review queue, and why that is normal. The only colour is the SDK mix of the
+  robots the week touched, which is the one thing colour is allowed to mean here; the counts
+  sit in plain graphite panels. A malformed or future week renders a named "no digest for
+  that week" card rather than throwing, because a crawler can ask for the image before the
+  page. Prerendered for the same weeks the page prerenders. Three Playwright specs read the
+  week ids off `/digest` rather than hard-coding them, assert both cards are 1200x630 PNGs
+  from their IHDR bytes, and hold the site default card unchanged (#PRNUM).
 
 - Freshness signal: every row and every robot page now says how old its facts are, not
   just when they were checked. A new `freshness()` in `src/lib/format.ts` turns a
