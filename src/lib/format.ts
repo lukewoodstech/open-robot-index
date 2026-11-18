@@ -62,8 +62,12 @@ export interface Freshness {
   stale: boolean;
 }
 
-/** The coarsest unit that still reads honestly for a given age. */
-function ageLabel(days: number): string {
+/**
+ * The coarsest unit that still reads honestly for a given age. Exported so the
+ * review queue can describe how long a proposal has waited in the same words
+ * the freshness marks use for how long a fact has gone unchecked.
+ */
+export function ageLabel(days: number): string {
   if (days < 0) return "dated ahead";
   if (days === 0) return "today";
   if (days === 1) return "yesterday";

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { QueueHealthStrip } from "@/components/queue-health";
 import { ReviewQueue } from "@/components/review-queue";
 import type { Proposal } from "@/lib/proposals";
+import { queueHealth, type QueueRow } from "@/lib/queue-health";
 import { currentAdmin, supabaseAdmin } from "@/lib/supabase-server";
 import { signOut } from "../login/actions";
 
@@ -18,7 +20,16 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) throw new Error(error.message);
-  const { count: pendingCount } = await db.from("proposals").select("id", { count: "exact", head: true }).eq("status", "pending");
+
+  // The health strip is read off the pending rows themselves rather than a
+  // separate count, so the summary and the table can never disagree.
+  const { data: pendingRows, error: pendingError } = await db
+    .from("proposals")
+    .select("kind, created_at")
+    .eq("status", "pending")
+    .limit(1000);
+  if (pendingError) throw new Error(pendingError.message);
+  const health = queueHealth((pendingRows ?? []) as QueueRow[], new Date());
 
   return (
     <div>
@@ -26,7 +37,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Review queue</h1>
           <p className="mt-1 text-sm text-muted">
-            {pendingCount ?? 0} pending · Signed in as {who} · Keys: J/K move, A approve, R reject
+            Signed in as {who} · Keys: J/K move, A approve, R reject
           </p>
         </div>
         <div className="flex items-center gap-4 text-sm">
@@ -40,6 +51,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
           </form>
         </div>
       </div>
+      <QueueHealthStrip health={health} shown={status === "pending" ? (data ?? []).length : undefined} />
       <ReviewQueue proposals={(data ?? []) as Proposal[]} readOnly={status !== "pending"} />
     </div>
   );
