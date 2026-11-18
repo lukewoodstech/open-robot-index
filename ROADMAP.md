@@ -122,7 +122,7 @@ public table, keep every fact sourced and dated.
   that week" card rather than throwing, because a crawler can ask for the image before the
   page. Prerendered for the same weeks the page prerenders. Three Playwright specs read the
   week ids off `/digest` rather than hard-coding them, assert both cards are 1200x630 PNGs
-  from their IHDR bytes, and hold the site default card unchanged (#13).
+  from their IHDR bytes, and hold the site default card unchanged (#12).
 
 - Freshness signal: every row and every robot page now says how old its facts are, not
   just when they were checked. A new `freshness()` in `src/lib/format.ts` turns a
