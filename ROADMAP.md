@@ -51,38 +51,34 @@ public table, keep every fact sourced and dated.
    > A logo lifted from anywhere else would breach the images non-negotiable. Needs a
    > human: allowlist those domains for the routine, or drop in the logo files by hand
    > with their `logo_source`.
-4. **Review-queue health on `/admin/review`.** A header line with the pending count, the
-   age of the oldest pending proposal, and a breakdown by kind, so a backlog is visible
-   on arrival. Read-only: it must not change the auto-approval policy or the queue's
-   buttons. Acceptance: the counts match the table; an empty queue says so.
-5. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
+4. **Announce the filtered count on the index.** Clicking an SDK chip or changing a
    select rewrites the table silently: the "N of M" counter updates but nothing is
    announced, so a screen-reader user cannot tell a filter did anything. Put the
    counter in an `aria-live="polite"` region and give the "No robots match" state a
    role so it is announced too. Acceptance: a Playwright test asserts the live
    region's text changes after a chip is clicked, and that nothing is announced on
    first paint.
-6. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
+5. **Real focus in the review queue.** `/admin/review` moves a cursor with J/K, but
    it only repaints a border — `document.activeElement` never moves, so a keyboard
    or screen-reader user cannot tell which proposal A/R will act on. Make the
    selected card actually take focus, keep the accent border, and label it so the
    move is announced. Acceptance: J/K moves `document.activeElement` to the
    selected card, A/R still act on it, and Tab from a card reaches its own
    Approve/Reject before the next card's.
-7. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
+6. **Say when a compare slug is unknown.** `/compare?a=nope&b=so-101` silently drops
    the bad slug and falls through to "Pick at least two robots", which blames the
    reader for a bad link. Name the slug that did not resolve and offer the picker.
    Acceptance: an unknown slug renders a message naming it; a valid pair is
    unaffected; the canonical still collapses argument order.
 
-8. **OG cards for company pages.** `/companies/[slug]` unfurls as the generic site card,
+7. **OG cards for company pages.** `/companies/[slug]` unfurls as the generic site card,
    so a link to a maker says nothing about what they sell. Draw a card in the same Geist
    on graphite: the company name, how many robots of theirs are in the index, their SDK
    mix in the three state colours, and the cheapest entry price across them. Acceptance:
    every company prerenders a 1200x630 PNG; a one-robot company and a many-robot company
    both render; the site default is unchanged.
 
-9. **An OG card for a comparison.** `/compare?a=&b=` is the page most likely to be pasted
+8. **An OG card for a comparison.** `/compare?a=&b=` is the page most likely to be pasted
    into a chat, and today it unfurls as the generic site card, so the link does not say
    which robots are being compared. Note before starting: a file-based `opengraph-image`
    is handed `params` only, never `searchParams`, so this needs a route handler that takes
@@ -91,7 +87,7 @@ public table, keep every fact sourced and dated.
    and entry price; no slugs or only bad slugs falls back to the site card; swapping
    argument order produces the same image URL, as the canonical already does.
 
-10. **Age the facts on company pages.** The freshness pass reached the index and the robot
+9. **Age the facts on company pages.** The freshness pass reached the index and the robot
    pages, but `/companies/[slug]` still lists its robots with a bare date, so a maker whose
    whole range is four months stale reads exactly like one checked last week. Carry the
    same `freshness()` age and stale mark onto each row there, and say in the page's
@@ -100,6 +96,22 @@ public table, keep every fact sourced and dated.
    expected stale marks from those dates rather than hard-coding a company.
 
 ## Done
+- Review-queue health: `/admin/review` opens with the three facts a count alone cannot
+  give — how many proposals are pending, how long the oldest has waited, and what kinds
+  they are — so a backlog announces itself instead of hiding in a scroll. The summary is
+  derived from the same pending rows the table is built from rather than a separate
+  `count` query, so the header and the list can never disagree, and the page says plainly
+  when it is showing only the newest 200 of a longer queue. A wait past seven days (one
+  full cycle of the slowest agent) is marked the way a stale fact is on the index —
+  bordered and full-contrast, no new colour, since colour here means SDK state only.
+  Waits under a day are counted in minutes and hours, because a queue emptied an hour ago
+  should not read "today"; past a day the wording hands off to the same `ageLabel()` the
+  freshness marks use. Strictly read-only: `src/lib/proposals.ts`, the auto-approval
+  policy and the Approve/Reject buttons are untouched. Eight specs cover the derivation —
+  the breakdown summing to the count, the oldest row winning, the overdue flag flipping
+  at the window and not before, and a malformed timestamp never throwing — since the page
+  itself sits behind the admin session and cannot be driven in CI without a secret (#PRNUM).
+
 - OG cards for digest weeks: `/digest/[week]/opengraph-image` draws a card per week in the
   same Geist on graphite as the robot cards — the week in words, its date range and ISO id,
   and three counts read straight off the digest (buyer changes, robots re-checked, tier
