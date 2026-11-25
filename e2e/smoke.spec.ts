@@ -21,10 +21,11 @@ function robotLinks(page: Page): Locator {
   return page.locator('table a[href^="/robots/"]');
 }
 
-/** The "shown of total" counter in the filter bar. It grows a Clear button
- *  once a filter is on, so it is matched on its leading text. */
+/** The "shown of total" counter in the filter bar. Matched on the attribute,
+ *  not its text: the counter is a live region now, and the wrapper holding it
+ *  and the Clear button starts with the same digits. */
 function counter(page: Page): Locator {
-  return page.getByText(/^\d+ of \d+/);
+  return page.locator("[data-filter-status]");
 }
 
 async function failsValidation(target: Locator): Promise<boolean> {
