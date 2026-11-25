@@ -204,24 +204,44 @@ export function RobotTable({ robots, today }: { robots: RobotFull[]; today: stri
           <span className="text-muted">LeRobot</span>
         </label>
 
-        <span className="ml-auto text-muted tabular-nums">
-          {rows.length} of {robots.length}
+        <div className="ml-auto flex items-center gap-3">
+          {/* The counter is the one thing on the page that says a filter did
+              anything, so it is the live region. It carries its own noun, since
+              "9 of 23" read out of context says nothing about what was counted.
+              The Clear button is a sibling, not a child: inside the region its
+              arrival and departure would be announced along with the count. */}
+          <span
+            data-filter-status
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="text-muted tabular-nums"
+          >
+            {rows.length} of {robots.length}
+            <span className="sr-only"> robots shown</span>
+          </span>
           {filtersActive && (
-            <button onClick={clearFilters} className="tap ml-3 text-accent hover:underline">
+            <button onClick={clearFilters} className="tap text-accent hover:underline">
               Clear
             </button>
           )}
-        </span>
+        </div>
       </div>
 
       {rows.length === 0 ? (
         <div className="py-16 text-center text-muted text-sm">
-          <p className="text-text mb-1">No robots match.</p>
-          <p>
-            {ceiling !== Infinity ? "Raise or clear the price filter" : "Loosen a filter"}
-            {sdk !== "all" ? ", or switch SDK to All" : ""}
-            {lerobotOnly ? ", or turn off LeRobot" : ""}.
-          </p>
+          {/* The table is gone, so a sighted user sees the explanation and a
+              screen-reader user would hear only the count drop to zero. This
+              block announces itself, and the button stays outside it so the
+              announcement is the message rather than the message plus a label. */}
+          <div data-empty-state role="status" aria-live="polite">
+            <p className="text-text mb-1">No robots match.</p>
+            <p>
+              {ceiling !== Infinity ? "Raise or clear the price filter" : "Loosen a filter"}
+              {sdk !== "all" ? ", or switch SDK to All" : ""}
+              {lerobotOnly ? ", or turn off LeRobot" : ""}.
+            </p>
+          </div>
           <button onClick={clearFilters} className="tap mt-4 text-accent hover:underline">
             Clear all filters
           </button>
